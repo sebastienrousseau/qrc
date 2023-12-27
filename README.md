@@ -1,3 +1,9 @@
+<!-- markdownlint-disable MD033 MD041 -->
+
+<img src="https://kura.pro/qrc/images/logos/qrc.svg"
+alt="RustLogs (RLG) logo" height="261" width="261" align="right" />
+
+<!-- markdownlint-enable MD033 MD041 -->
 # QRC
 
 The QR Code Library for Rust 🦀
@@ -138,9 +144,9 @@ lot of useful suggestions on how to improve this project.
 [9]: https://docs.rs/qrc
 [10]: https://lib.rs/crates/qrc
 
-[banner]: https://raw.githubusercontent.com/sebastienrousseau/vault/main/assets/mini-functions/banners/banner-qrc-1597x377.svg "QRC Banner"
+[banner]: https://kura.pro/qrc/images/titles/title-qrc.svg "QRC Banner"
 [crates-badge]: https://img.shields.io/crates/v/qrc.svg?style=for-the-badge 'Crates.io'
-[divider]: https://raw.githubusercontent.com/sebastienrousseau/vault/main/assets/elements/divider.svg "divider"
+[divider]: https://kura.pro/common/images/elements/divider.svg "divider"
 [docs-badge]: https://img.shields.io/docsrs/qrc.svg?style=for-the-badge 'Docs.rs'
 [libs-badge]: https://img.shields.io/badge/lib.rs-v0.0.2-orange.svg?style=for-the-badge 'Lib.rs'
 [license-badge]: https://img.shields.io/crates/l/qrc.svg?style=for-the-badge 'License'
