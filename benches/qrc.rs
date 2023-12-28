@@ -1,35 +1,40 @@
+//! # QRC Benchmarking
+//!
+//! Benchmarks for the `qrc` crate, testing various functionalities like QR code generation,
+//! colourisation, and performance under different scenarios.
+
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use image::Rgba;
 extern crate qrc;
 use self::qrc::QRCode;
 
-// Benchmark for QRCode::new
+/// Benchmark for QRCode::new
 fn new_benchmark(c: &mut Criterion) {
     c.bench_function("QRCode::new", |b| {
         b.iter(|| QRCode::new(black_box(vec![1, 2, 3])))
     });
 }
-// Benchmark for QRCode::to_png
+/// Benchmark for QRCode::to_png
 fn to_png_benchmark(c: &mut Criterion) {
     let qrcode = QRCode::new(vec![1, 2, 3]);
     c.bench_function("QRCode::to_png", |b| b.iter(|| qrcode.to_png(512)));
 }
 
-// Benchmark for QRCode::from_string
+/// Benchmark for QRCode::from_string
 fn from_string_benchmark(c: &mut Criterion) {
     c.bench_function("QRCode::from_string", |b| {
         b.iter(|| QRCode::from_string(black_box("Hello, world!".to_string())))
     });
 }
 
-// Benchmark for QRCode::from_bytes
+/// Benchmark for QRCode::from_bytes
 fn from_bytes_benchmark(c: &mut Criterion) {
     c.bench_function("QRCode::from_bytes", |b| {
         b.iter(|| QRCode::from_bytes(black_box(vec![1, 2, 3])))
     });
 }
 
-// Benchmark for QRCode::to_svg
+/// Benchmark for QRCode::to_svg
 fn to_svg_benchmark(c: &mut Criterion) {
     let qrcode = QRCode::new(vec![1, 2, 3]);
     c.bench_function("QRCode::to_svg", |b| {
@@ -37,7 +42,7 @@ fn to_svg_benchmark(c: &mut Criterion) {
     });
 }
 
-// Benchmark for QRCode::colorize
+/// Benchmark for QRCode::colorize
 fn colorize_benchmark(c: &mut Criterion) {
     let qrcode = QRCode::new(vec![1, 2, 3]);
     let color = Rgba([0, 0, 0, 0]);
@@ -46,7 +51,7 @@ fn colorize_benchmark(c: &mut Criterion) {
     });
 }
 
-// Benchmark for QRCode::resize
+/// Benchmark for QRCode::resize
 fn resize_benchmark(c: &mut Criterion) {
     let qrcode = QRCode::new(vec![1, 2, 3]);
     c.bench_function("QRCode::resize", |b| {

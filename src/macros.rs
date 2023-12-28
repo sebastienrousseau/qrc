@@ -254,4 +254,3 @@ macro_rules! create_multilanguage_qr {
         QRCode::create_multilanguage(data_map)
     }};
 }
-

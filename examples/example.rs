@@ -1,3 +1,8 @@
+//! # QRC Example
+//!
+//! This example demonstrates the usage of the `qrc` crate for generating and manipulating QR codes.
+//! It includes examples of creating a QR code, adding watermarks, and other functionalities provided by the `qrc` crate.
+
 extern crate image;
 use image::{imageops, ImageBuffer, Rgba, RgbaImage};
 extern crate qrc;

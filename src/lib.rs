@@ -105,9 +105,9 @@
 extern crate image;
 extern crate qrcode;
 
-use flate2::{Compression, write::ZlibEncoder};
+use flate2::{write::ZlibEncoder, Compression};
 use image::{ImageBuffer, Rgba, RgbaImage};
-use qrcode::{QrCode, render::svg, Color};
+use qrcode::{render::svg, Color, QrCode};
 use std::{collections::HashMap, io::Write};
 
 /// The `macros` module contains functions for generating macros.
@@ -127,7 +127,10 @@ pub struct QRCode {
 impl QRCode {
     /// Creates a new QRCode structure with the given data.
     pub fn new(data: Vec<u8>) -> Self {
-        QRCode { data, encoding_format: "utf-8".to_string() }
+        QRCode {
+            data,
+            encoding_format: "utf-8".to_string(),
+        }
     }
 
     /// The `from_string` method creates a new instance of the QRCode
@@ -142,7 +145,10 @@ impl QRCode {
 
     /// Creates a new QRCode structure from a vector of bytes.
     pub fn from_bytes(data: Vec<u8>) -> Self {
-        QRCode { data, encoding_format: "utf-8".to_string() }
+        QRCode {
+            data,
+            encoding_format: "utf-8".to_string(),
+        }
     }
 
     /// Converts the QRCode structure to a QrCode structure.
@@ -286,9 +292,7 @@ impl QRCode {
         }
 
         // Create a QRCode instance with the selected data.
-        let qr_code = QRCode::from_string(selected_data.to_string());
-
-        qr_code
+        QRCode::from_string(selected_data.to_string())
     }
 
     /// Generates a dynamic QR code, which can be updated after creation.
@@ -300,15 +304,19 @@ impl QRCode {
 
         // Create a dynamic QR code URL based on the initial data and format.
         let dynamic_url = match dynamic_data_format {
-            "url" => format!("https://your-api-endpoint.com/update?qrcode={}", initial_data),
+            "url" => {
+                format!(
+                    "https://your-api-endpoint.com/update?qrcode={}",
+                    initial_data
+                )
+            }
             // Add more format cases as needed.
             _ => return QRCode::from_string(initial_data.to_string()), // Default to the initial data.
         };
 
         // Create a QRCode instance with the dynamic URL.
-        let qr_code = QRCode::from_string(dynamic_url);
+        QRCode::from_string(dynamic_url)
 
-        qr_code
     }
 
     /// Combines multiple QR codes into a single larger QR code.
@@ -321,7 +329,10 @@ impl QRCode {
         }
 
         // Calculate the total width and height needed for the combined QR code.
-        let total_width = codes.iter().map(|code| code.to_qrcode().width() as u32).sum();
+        let total_width = codes
+            .iter()
+            .map(|code| code.to_qrcode().width() as u32)
+            .sum();
 
         // Create a new QRCode instance with a placeholder empty data.
         let mut combined_qrcode = QRCode::from_bytes(Vec::new());
@@ -354,7 +365,11 @@ impl QRCode {
                             combined_image.put_pixel(combined_x, combined_y, Rgba([0, 0, 0, 0]));
                         }
                         qrcode::Color::Light => {
-                            combined_image.put_pixel(combined_x, combined_y, Rgba([255, 255, 255, 255]));
+                            combined_image.put_pixel(
+                                combined_x,
+                                combined_y,
+                                Rgba([255, 255, 255, 255]),
+                            );
                         }
                     }
                 }
@@ -384,13 +399,13 @@ impl QRCode {
         let mut encoder = ZlibEncoder::new(&mut compressed_data, Compression::default());
 
         // Compress the input data and check for errors.
-        if let Err(_) = encoder.write_all(input_bytes) {
+        if encoder.write_all(input_bytes).is_err()  {
             // Compression failed, return the original data.
             return input_bytes.to_vec();
         }
 
         // Finish the compression process and retrieve the compressed data.
-        if let Err(_) = encoder.finish() {
+        if encoder.finish().is_err() {
             // Compression failed, return the original data.
             return input_bytes.to_vec();
         }
@@ -419,7 +434,6 @@ impl QRCode {
 
     /// Implementation for overlaying an image on top of a QR code.
     pub fn overlay_image(&self, overlay: &RgbaImage) -> RgbaImage {
-
         // Create a QR code image.
         let qrcode = self.to_qrcode();
 
@@ -439,7 +453,11 @@ impl QRCode {
                         combined_image.put_pixel(combined_x, combined_y, Rgba([0, 0, 0, 0]));
                     }
                     Color::Light => {
-                        combined_image.put_pixel(combined_x, combined_y, Rgba([255, 255, 255, 255]));
+                        combined_image.put_pixel(
+                            combined_x,
+                            combined_y,
+                            Rgba([255, 255, 255, 255]),
+                        );
                     }
                 }
             }
@@ -468,7 +486,7 @@ impl QRCode {
         Ok(Self {
             data: self.data.clone(),
             encoding_format: format.to_string(), // Set the encoding format
-            // ... copy other fields ...
+                                                 // ... copy other fields ...
         })
     }
 
@@ -477,5 +495,3 @@ impl QRCode {
         &self.encoding_format
     }
 }
-
-

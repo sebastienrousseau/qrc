@@ -4,7 +4,7 @@ mod tests {
     use image::{Rgba, RgbaImage};
 
     extern crate qrc;
-    use qrc::{add_image_watermark, qr_code, qr_code_to, QRCode, set_encoding_format};
+    use qrc::{add_image_watermark, qr_code, qr_code_to, set_encoding_format, QRCode};
 
     const URL: &str = "https://minifunctions.com/"; // Define a constant for the URL to be encoded
 
@@ -190,5 +190,4 @@ mod tests {
     //     };
     //     // Perform an appropriate assertion, such as checking if the correct language data is set
     // }
-
 }
