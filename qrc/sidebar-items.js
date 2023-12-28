@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":["add_image_watermark","batch_generate_qr","combine_qr_codes","compress_data_macro","create_dynamic_qr","create_multilanguage_qr","overlay_image","qr_code","qr_code_to","resize","set_encoding_format"],"mod":["macros"],"struct":["QRCode"]};
