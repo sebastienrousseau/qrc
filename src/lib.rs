@@ -115,8 +115,19 @@ pub mod macros;
 
 #[non_exhaustive]
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
-/// QRCode is a structure that contains data in the form of a vector of
-/// bytes.
+/// Represents a QR code containing data.
+///
+/// This struct can be used to generate QR code images in various formats.
+/// It supports encoding data as a QR code and rendering it in formats like PNG, JPG, and SVG.
+///
+/// # Examples
+///
+/// ```
+/// use qrc::QRCode;
+///
+/// // Create a new QR code with text data
+/// let qr = QRCode::new("Hello, world!".as_bytes().to_vec());
+/// ```
 pub struct QRCode {
     /// The `data` field holds the data to be encoded in the QR code.
     pub data: Vec<u8>,
@@ -125,7 +136,23 @@ pub struct QRCode {
 }
 /// Implementation of QRCode structure.
 impl QRCode {
-    /// Creates a new QRCode structure with the given data.
+    /// Creates a new `QRCode` instance with the given data.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use qrc::QRCode;
+    ///
+    /// let qr = QRCode::new("Hello, world!".as_bytes().to_vec());
+    /// ```
+    ///
+    /// # Parameters
+    ///
+    /// * `data`: A `Vec<u8>` representing the data to be encoded in the QR code.
+    ///
+    /// # Returns
+    ///
+    /// A new `QRCode` instance.
     pub fn new(data: Vec<u8>) -> Self {
         QRCode {
             data,
@@ -157,6 +184,24 @@ impl QRCode {
     }
 
     /// Converts the QRCode structure to a PNG image.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use qrc::QRCode;
+    ///
+    /// // Convert a string slice to a String using `.to_string()`
+    /// let qr = QRCode::from_string("Hello, world!".to_string());
+    /// let png_image = qr.to_png(256);
+    /// ```
+    ///
+    /// # Parameters
+    ///
+    /// * `width`: The width of the image in pixels.
+    ///
+    /// # Returns
+    ///
+    /// An `ImageBuffer` representing the QR code in PNG format.
     pub fn to_png(&self, width: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
         let qrcode = self.to_qrcode();
         let height = width;
@@ -172,6 +217,14 @@ impl QRCode {
         img
     }
     /// Converts the QRCode structure to a JPG image.
+    ///
+    /// # Parameters
+    ///
+    /// * `width`: The width of the desired image in pixels.
+    ///
+    /// # Returns
+    ///
+    /// An `ImageBuffer` representing the QR code in JPG format.
     pub fn to_jpg(&self, width: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
         let qrcode = self.to_qrcode();
         let height = width;
@@ -187,6 +240,14 @@ impl QRCode {
         img
     }
     /// Converts the QRCode structure to a GIF image.
+    ///
+    /// # Parameters
+    ///
+    /// * `width`: The width of the desired image in pixels.
+    ///
+    /// # Returns
+    ///
+    /// An `ImageBuffer` representing the QR code in GIF format.
     pub fn to_gif(&self, width: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
         let qrcode = self.to_qrcode();
         let height = width;
@@ -203,6 +264,14 @@ impl QRCode {
     }
 
     /// Converts the QRCode structure to an SVG image.
+    ///
+    /// # Parameters
+    ///
+    /// * `width`: The width of the desired image in pixels.
+    ///
+    /// # Returns
+    ///
+    /// A `String` representing the QR code in SVG format.
     pub fn to_svg(&self, width: u32) -> String {
         let qrcode = self.to_qrcode();
         let svg_string = qrcode
@@ -214,9 +283,15 @@ impl QRCode {
         svg_string
     }
 
-    /// The `colorize` method creates a new PNG image of the QR code
-    /// using the data stored in the QRCode and the given color value to
-    /// colorize the QR code.
+    /// Colorizes the QR code with the specified color.
+    ///
+    /// # Parameters
+    ///
+    /// * `color`: The `Rgba<u8>` color value to use for the QR code.
+    ///
+    /// # Returns
+    ///
+    /// A colorized `RgbaImage` of the QR code.
     pub fn colorize(&self, color: Rgba<u8>) -> RgbaImage {
         let qrcode = self.to_qrcode();
         let mut img: RgbaImage = ImageBuffer::new(qrcode.width() as u32, qrcode.width() as u32);
@@ -231,9 +306,16 @@ impl QRCode {
         img
     }
 
-    /// The `resize` method creates a new PNG image of the QR code using
-    /// the data stored in the QRCode and the given width and height
-    /// values to resize the QR code.
+    /// Resizes the QR code image to the specified width and height.
+    ///
+    /// # Parameters
+    ///
+    /// * `width`: The width of the image in pixels.
+    /// * `height`: The height of the image in pixels.
+    ///
+    /// # Returns
+    ///
+    /// A resized `RgbaImage` of the QR code.
     pub fn resize(&self, width: u32, height: u32) -> RgbaImage {
         let qrcode = self.to_qrcode();
         let mut img: RgbaImage = ImageBuffer::new(width, height);
@@ -250,7 +332,13 @@ impl QRCode {
         }
         img
     }
-    /// The `add_image_watermark` method adds a watermark to the given image.
+
+    /// Adds a watermark image to the QR code.
+    ///
+    /// # Parameters
+    ///
+    /// * `img`: A mutable reference to the `RgbaImage` of the QR code.
+    /// * `watermark`: A reference to the watermark `RgbaImage`.
     pub fn add_image_watermark(img: &mut RgbaImage, watermark: &RgbaImage) {
         let (width, height) = img.dimensions();
         let (watermark_width, watermark_height) = watermark.dimensions();
@@ -276,7 +364,15 @@ impl QRCode {
         }
     }
 
-    /// Creates a QR code with multi-language support.
+    /// Creates a multilingual QR code based on a map of language codes to data strings.
+    ///
+    /// # Parameters
+    ///
+    /// * `data_map`: A `HashMap` mapping language codes (`String`) to data (`String`).
+    ///
+    /// # Returns
+    ///
+    /// A `QRCode` instance representing a multilingual QR code.
     pub fn create_multilanguage(data_map: HashMap<String, String>) -> Self {
         // Implementation to generate a QR code that can display different data
         // based on the user's language preference.
@@ -295,7 +391,15 @@ impl QRCode {
         QRCode::from_string(selected_data.to_string())
     }
 
-    /// Generates a dynamic QR code, which can be updated after creation.
+    /// Generates a dynamic QR code that can be updated after creation.
+    ///
+    /// # Parameters
+    ///
+    /// * `initial_data`: A string slice representing the initial data for the QR code.
+    ///
+    /// # Returns
+    ///
+    /// A `QRCode` instance representing a dynamic QR code.
     pub fn create_dynamic(initial_data: &str) -> Self {
         // Implementation for creating a QR code whose content can be updated post-creation.
 
@@ -316,10 +420,17 @@ impl QRCode {
 
         // Create a QRCode instance with the dynamic URL.
         QRCode::from_string(dynamic_url)
-
     }
 
     /// Combines multiple QR codes into a single larger QR code.
+    ///
+    /// # Parameters
+    ///
+    /// * `codes`: A vector of `QRCode` instances to combine.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` which is either a combined `QRCode` instance or an error string.
     pub fn combine_qr_codes(codes: Vec<QRCode>) -> Result<Self, &'static str> {
         // Implementation to merge multiple QR codes into one, suitable for complex data sets.
 
@@ -385,7 +496,15 @@ impl QRCode {
         Ok(combined_qrcode)
     }
 
-    /// Compresses data before encoding it into a QR code.
+    /// Compresses the provided data string using Zlib compression.
+    ///
+    /// # Parameters
+    ///
+    /// * `data`: A string slice representing the data to compress.
+    ///
+    /// # Returns
+    ///
+    /// A `Vec<u8>` containing the compressed data.
     pub fn compress_data(data: &str) -> Vec<u8> {
         // Implementation for data compression to reduce the size of data before QR code generation.
 
@@ -399,7 +518,7 @@ impl QRCode {
         let mut encoder = ZlibEncoder::new(&mut compressed_data, Compression::default());
 
         // Compress the input data and check for errors.
-        if encoder.write_all(input_bytes).is_err()  {
+        if encoder.write_all(input_bytes).is_err() {
             // Compression failed, return the original data.
             return input_bytes.to_vec();
         }
@@ -413,7 +532,15 @@ impl QRCode {
         compressed_data
     }
 
-    /// Decompresses data after decoding it from a QR code.
+    /// Generates a batch of QR codes from a vector of data strings.
+    ///
+    /// # Parameters
+    ///
+    /// * `data`: A vector of strings, each representing data for a separate QR code.
+    ///
+    /// # Returns
+    ///
+    /// A vector of `QRCode` instances.
     pub fn batch_generate_qr_codes(data: Vec<String>) -> Vec<QRCode> {
         // Implementation for batch generating QR codes from a list of data.
 
@@ -432,7 +559,15 @@ impl QRCode {
         qr_codes
     }
 
-    /// Implementation for overlaying an image on top of a QR code.
+    /// Overlays an image on top of the QR code.
+    ///
+    /// # Parameters
+    ///
+    /// * `overlay`: A reference to the `RgbaImage` to overlay on the QR code.
+    ///
+    /// # Returns
+    ///
+    /// A combined `RgbaImage` with the overlay applied.
     pub fn overlay_image(&self, overlay: &RgbaImage) -> RgbaImage {
         // Create a QR code image.
         let qrcode = self.to_qrcode();
@@ -477,7 +612,15 @@ impl QRCode {
         combined_image
     }
 
-    /// Sets the encoding format for the QR code and returns a new instance.
+    /// Sets the encoding format of the QR code.
+    ///
+    /// # Parameters
+    ///
+    /// * `format`: A string slice representing the encoding format.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` which is either a new `QRCode` instance with updated encoding or an error string.
     pub fn set_encoding_format(&self, format: &str) -> Result<Self, &'static str> {
         if format != "utf-8" {
             return Err("Unsupported encoding format");
@@ -490,7 +633,11 @@ impl QRCode {
         })
     }
 
-    /// Gets the encoding format of the QR code.
+    /// Retrieves the encoding format of the QR code.
+    ///
+    /// # Returns
+    ///
+    /// A string slice representing the encoding format.
     pub fn get_encoding_format(&self) -> &str {
         &self.encoding_format
     }

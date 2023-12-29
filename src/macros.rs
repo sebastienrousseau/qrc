@@ -8,9 +8,23 @@
 // SPDX (Software Package Data Exchange) identifiers are used for clarity in licensing.
 
 #[macro_export]
-/// The `add_image_watermark` macro creates a new instance of the QRCode struct
-/// with the given data.
-// This attribute exports the macro so it can be used in other modules or crates.
+/// Macro to add a watermark image to a QR code.
+///
+/// # Parameters
+/// * `$img` - The main QR code image as a mutable reference.
+/// * `$watermark` - The watermark image as an immutable reference.
+///
+/// # Example
+/// ```
+/// use qrc::QRCode;
+/// use image::{ImageBuffer, Rgba};
+///
+/// // Create a mock QR code and watermark image for the example
+/// let mut img = ImageBuffer::from_pixel(100, 100, Rgba([0, 0, 0, 255]));
+/// let watermark = ImageBuffer::from_pixel(50, 50, Rgba([255, 255, 255, 255]));
+///
+/// qrc::add_image_watermark!(&mut img, &watermark);
+/// ```
 macro_rules! add_image_watermark {
     // Defines the macro `add_image_watermark`.
     ($img:expr, $watermark:expr) => {
@@ -24,9 +38,16 @@ macro_rules! add_image_watermark {
 }
 
 #[macro_export]
-/// The `qr_code` macro creates a new instance of the QRCode struct
-/// with the given data.
-// This attribute exports the macro for external use.
+/// Macro to create a new QR code from the given data.
+///
+/// # Parameters
+/// * `$data` - The data to be encoded in the QR code.
+///
+/// # Example
+/// ```
+/// use qrc::{QRCode, qr_code};
+/// qr_code!("Hello, world!".into());
+/// ```
 macro_rules! qr_code {
     // Defines the macro `qr_code`.
     ($data:expr) => {
@@ -38,8 +59,18 @@ macro_rules! qr_code {
 }
 
 #[macro_export]
-/// Define a macro named `qr_code_to`
-// Export the macro for use in other modules.
+/// Macro to create a QR code in a specified format with a given width.
+///
+/// # Parameters
+/// * `$data` - The data to be encoded in the QR code.
+/// * `$format` - The format of the QR code image (e.g., "png", "jpg", "gif").
+/// * `$width` - The width of the QR code image.
+///
+/// # Example
+/// ```
+/// use qrc::{QRCode, qr_code_to};
+/// qr_code_to!("Hello, world!".into(), "png", 256);
+/// ```
 macro_rules! qr_code_to {
     // Define the macro `qr_code_to`.
     // This macro takes three expressions: `$data`, `$format`, and `$width`.

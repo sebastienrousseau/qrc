@@ -1,15 +1,34 @@
 [package]
-name = "qrc"
-edition = "2021"
-rust-version = "1.71.1"
-version = "0.0.3"
-authors = ["Sebastian Rousseau <sebastian.rousseau@gmail.com"]
-description = "A Rust library for generating and manipulating QR code images in various formats"
-homepage = "https://minifunctions.com/"
-keywords = ["barcode", "mini-functions", "qr", "qrc", "qrcode"]
+authors = ["QRC Contributors"]
 categories = ["Algorithms", "Encoding", "Images", "Rendering", "Visualization"]
+description = """
+A Rust library for generating and manipulating QR code images in various formats
+"""
+documentation = "https://docs.rs/qrc"
+edition = "2021"
+exclude = ["/.git/*", "/.github/*", "/.gitignore", "/.vscode/*"]
+homepage = "https://qrclib.one"
+keywords = ["barcode", "mini-functions", "qr", "qrc", "qrcode"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/sebastienrousseau/mini-functions/tree/main/qrc/"
+name = "qrc"
+repository = "https://github.com/sebastienrousseau/qrc/"
+rust-version = "1.71.1"
+version = "0.0.4"
+include = [
+    "../../LICENSE-APACHE",
+    "../../LICENSE-MIT",
+    "/benches/**",
+    "/build.rs",
+    "/Cargo.toml",
+    "/examples/**",
+    "/README.md",
+    "/src/**",
+    "/tests/**",
+]
+
+[workspace]
+members = ["xtask"]
+
 [package.metadata.docs.rs]
 all-features = true
 
@@ -18,10 +37,10 @@ flate2 = "1.0.28"
 image = "0.24.7"
 
 [dependencies.qrcode]
-version = "0.13.0"
+default-features = false
 features = ["svg"]
 optional = false
-default-features = false
+version = "0.13.0"
 
 [dev-dependencies]
 criterion = "0.5.1"
@@ -44,3 +63,38 @@ plugin = false
 proc-macro = false
 harness = false
 required-features = []
+
+[profile.dev]
+codegen-units = 256
+debug = true
+debug-assertions = true
+incremental = true
+lto = false
+opt-level = 0
+overflow-checks = true
+panic = 'unwind'
+rpath = false
+strip = false
+
+[profile.release]
+codegen-units = 1
+debug = false
+debug-assertions = false
+incremental = false
+lto = true
+opt-level = "s"
+overflow-checks = false
+panic = "abort"
+rpath = false
+strip = "symbols"
+
+[profile.test]
+codegen-units = 256
+debug = true
+debug-assertions = true
+incremental = true
+lto = false
+opt-level = 0
+overflow-checks = true
+rpath = false
+strip = false

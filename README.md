@@ -1,78 +1,231 @@
 <!-- markdownlint-disable MD033 MD041 -->
-
-<img src="https://kura.pro/qrc/images/logos/qrc.svg"
-alt="RustLogs (RLG) logo" height="261" width="261" align="right" />
-
+<img
+    src="https://kura.pro/qrc/images/logos/qrc.svg"
+    alt="RustLogs (RLG) logo"
+    title="RustLogs (RLG) logo"
+    height="261"
+    width="261"
+    align="right"
+/>
 <!-- markdownlint-enable MD033 MD041 -->
+
 # QRC
 
-The QR Code Library for Rust 🦀
+A Rust library for generating and manipulating QR code images in various formats 🦀
 
-[![Made With Love][made-with-rust]][6]
-[![Crates.io][crates-badge]][8]
-[![Lib.rs][libs-badge]][10]
+[![Made With Love][made-with-rust]][05]
+[![Crates.io][crates-badge]][07]
+[![Lib.rs][libs-badge]][06]
 [![Docs.rs][docs-badge]][9]
-[![License][license-badge]][2]
+[![License][license-badge]][02]
 
 ![divider][divider]
 
-## Welcome to QRC 👋
+## Welcome to QRC
 
 ![QRC Banner][banner]
 
 <!-- markdownlint-disable MD033 -->
 <center>
 
-**[Website][0]
+**[Website][00]
 • [Documentation][9]
-• [Report Bug][3]
-• [Request Feature][3]
-• [Contributing Guidelines][4]**
+• [Report Bug][03]
+• [Request Feature][03]
+• [Contributing Guidelines][04]**
 
 </center>
 
 <!-- markdownlint-enable MD033 -->
 
-## Overview 📖
+## Overview
 
-The QR Code Library (QRC) is a versatile tool for generating and
-manipulating QR code images in various formats.
+The QR Code Library (QRC) is a comprehensive Rust library designed to create and
+manipulate QR codes. It offers a wide range of functionalities including
+generating QR codes in various formats, customizing color schemes, adding image
+watermarks, and more.
 
-With this library, you can easily convert your data into a QR code,
-whether it be in the form of a string or a vector of bytes.
+## Features
 
-Choose from popular image formats like PNG, JPG, GIF and SVG, and even
-customize the size and color of your QR code.
+- Generate QR code images in multiple formats like PNG, JPG, GIF, and SVG,
+- Customize color schemes,
+- Add image watermarks,
+- Easy integration with Rust projects.
 
-## Features ✨
+### Usage Examples
 
-`QRC` features a `QRCode` struct that can be constructed with a
-`Vec<u8>` of data or a `String` of data that will be converted to
-a `Vec<u8>`.
+Here are some basic examples of how to use QRC in your Rust projects:
 
-The QR code can be generated using the `to_qrcode`method, and specific
-image formats can be generated using the`to_png`,`to_jpg`, and`to_gif`
-methods.
+```rust
+// Create a new QRCode using the QRCode::from_string() function and convert it to a PNG representation
+let qrcode = QRCode::from_string(URL.to_string());
 
-Each of these methods takes a `width` parameter and returns an
-`ImageBuffer` containing the QR code image.
+// Convert the QRCode into a PNG representation
+let png = qrcode.to_png(512);
 
-The library uses the qrcode and image crates to generate the QR code
-images.
+// Convert the PNG representation of the QRCode into a vector of bytes
+let png_data = png.into_raw();
+let png_image = ImageBuffer::<Rgba<u8>, Vec<u8>>::from_raw(21, 21, png_data).unwrap();
 
-## Installation 📦
+// Print the PNG representation of the QRCode
+println!("fn to_png(): {:?}", png_image.save("qrcode.png"));
+match png_image.save("qrcode.png") {
+    // Print the path to the PNG representation of the QRCode that was saved to a file called "qrcode.png"
+    Ok(_) => println!("png file created: qrcode.png"),
+    // Print the path to the PNG representation of the QRCode that was saved to a file called "qrcode.png"
+    Err(e) => println!("png file created: qrcode.png: {e}"),
+}
+```
+
+## Macros in QRC
+
+The QR Code Library (QRC) offers a set of macros for easy manipulation and
+generation of QR codes in Rust. Below is the documentation for each macro
+available in the library.
+
+### 1. `add_image_watermark`
+
+- **Description**: This macro creates a new instance of the QRCode struct with a watermark image added to an existing image.
+- **Usage**:
+
+```rust
+add_image_watermark!(img, watermark);
+```
+
+- `img`: An expression representing the main image.
+- `watermark`: An expression representing the watermark image.
+
+### 2. `qr_code`
+
+- **Description**: Generates a new QR code instance with the provided data.
+- **Usage**:
+
+```rust
+qr_code!(data);
+```
+
+- `data`: An expression representing the data to encode in the QR code.
+
+### 3. `qr_code_to`
+
+- **Description**: Creates a QR code in a specified format (PNG, JPG, or GIF) and size.
+- **Usage**:
+
+```rust
+qr_code_to!(data, format, width);
+```
+
+- `data`: The data to encode.
+- `format`: The desired output format ("png", "jpg", or "gif").
+- `width`: The width of the QR code.
+
+### 4. `resize`
+
+- **Description**: Sets the size of the QR code.
+- **Usage**:
+
+```rust
+resize!(qrcode, size);
+```
+
+- `qrcode`: An instance of `QRCode`.
+- `size`: The desired size for the QR code.
+
+### 5. `set_encoding_format`
+
+- **Description**: Sets the encoding format for the data in a QR code.
+- **Usage**:
+
+```rust
+set_encoding_format!(qr_code, format);
+```
+
+- `qr_code`: An instance of `QRCode`.
+- `format`: The encoding format for the QR code data.
+
+### 6. `overlay_image`
+
+- **Description**: Overlays an image at the center of the QR code.
+- **Usage**:
+
+```rust
+overlay_image!(qr_code, image_path);
+```
+
+- `qr_code`: QRCode instance to which the image will be overlaid.
+- `image_path`: Path to the image file to overlay.
+
+### 7. `batch_generate_qr`
+
+- **Description**: Generates multiple QR codes in one operation.
+- **Usage**:
+
+```rust
+batch_generate_qr!(data_list);
+```
+
+- `data_list`: A vector of data strings for QR code generation.
+
+### 8. `compress_data_macro`
+
+- **Description**: Compresses data before encoding it into a QR code.
+- **Usage**:
+
+```rust
+compress_data_macro!(data);
+```
+
+- `data`: The data to be compressed and encoded.
+
+### 9. `combine_qr_codes`
+
+- **Description**: Combines multiple QR codes into a single QR code.
+- **Usage**:
+
+```rust
+combine_qr_codes!(codes);
+```
+
+- `codes`: An array of QRCode instances to combine.
+
+### 10. `create_dynamic_qr`
+
+- **Description**: Generates a dynamic QR code that can be updated after creation.
+- **Usage**:
+
+```rust
+create_dynamic_qr!(initial_data);
+```
+
+- `initial_data`: The initial data for the QR code.
+
+### 11. `create_multilanguage_qr`
+
+- **Description**: Generates QR codes with multi-language support.
+- **Usage**:
+
+```rust
+create_multilanguage_qr! {
+    "en" => "Hello",
+    "es" => "Hola",
+    "fr" => "Bonjour",
+};
+```
+
+- Language-data pairs for the QR code.
+
+## Installation
 
 It takes just a few minutes to get up and running with `qrc`.
 
 ### Requirements
 
-`qrc` requires Rust **1.67.0** or later.
+`qrc` requires Rust **1.71.1** or later.
 
-### Documentation
+## Documentation
 
-> ℹ️ **Info:** Please check out our [website][0] for more information
-and find our documentation on [docs.rs][9], [lib.rs][10] and
-[crates.io][8].
+You can find detailed documentation for QRC on [lib.rs][06], [crates.io][07] and
+[docs.rs][08].
 
 ## Usage 📖
 
@@ -81,7 +234,7 @@ To use `qrc` in your project, add the following to your
 
 ```toml
 [dependencies]
-qrc = "0.0.3"
+qrc = "0.0.4"
 ```
 
 Add the following to your `main.rs` file:
@@ -101,23 +254,23 @@ the examples, clone the repository and run the following command in your
 terminal from the project root directory.
 
 ```shell
-cargo run --example qrc
+cargo run --example example
 ```
 
-## Semantic Versioning Policy 🚥
+## Semantic Versioning Policy
 
 For transparency into our release cycle and in striving to maintain
-backward compatibility, `QRC` follows [semantic versioning][7].
+backward compatibility, `QRC` follows [semantic versioning][09].
 
-## License 📝
+## License
 
 The project is licensed under the terms of both the MIT license and the
 Apache License (Version 2.0).
 
-- [Apache License, Version 2.0][1]
-- [MIT license][2]
+- [Apache License, Version 2.0][01]
+- [MIT license][02]
 
-## Contribution 🤝
+## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the Apache-2.0
@@ -126,28 +279,28 @@ or conditions.
 
 ![divider][divider]
 
-## Acknowledgements 💙
+## Acknowledgements
 
-A big thank you to all the awesome contributors of [Mini Functions][6]
-for their help and support. A special thank you goes to the
-[Rust Reddit](https://www.reddit.com/r/rust/) community for providing a
-lot of useful suggestions on how to improve this project.
+A big thank you to all the awesome contributors of [QRC][05] for their help and
+support. A special thank you goes to the
+[Rust Reddit](https://www.reddit.com/r/rust/) community for providing a lot of
+useful suggestions on how to improve this project.
 
-[0]: https://minifunctions.com
-[1]: http://www.apache.org/licenses/LICENSE-2.0
-[2]: http://opensource.org/licenses/MIT
-[3]: https://github.com/sebastienrousseau/mini-functions/issues
-[4]: https://raw.githubusercontent.com/sebastienrousseau/mini-functions/main/.github/CONTRIBUTING.md
-[6]: https://github.com/sebastienrousseau/mini-functions/graphs/contributors
-[7]: http://semver.org/
-[8]: https://crates.io/crates/qrc
-[9]: https://docs.rs/qrc
-[10]: https://lib.rs/crates/qrc
+[00]: https://qrclib.one
+[01]: http://www.apache.org/licenses/LICENSE-2.0
+[02]: http://opensource.org/licenses/MIT
+[03]: https://github.com/sebastienrousseau/qrc/issues
+[04]: https://raw.githubusercontent.com/sebastienrousseau/qrc/main/CONTRIBUTING.md
+[05]: https://github.com/sebastienrousseau/qrc/graphs/contributors
+[06]: https://lib.rs/crates/qrc
+[07]: https://crates.io/crates/qrc
+[08]: https://docs.rs/qrc
+[09]: http://semver.org/
 
 [banner]: https://kura.pro/qrc/images/titles/title-qrc.svg "QRC Banner"
-[crates-badge]: https://img.shields.io/crates/v/qrc.svg?style=for-the-badge 'Crates.io'
+[crates-badge]: https://img.shields.io/crates/v/qrc.svg?style=for-the-badge "QRC on Crates.io"
 [divider]: https://kura.pro/common/images/elements/divider.svg "divider"
-[docs-badge]: https://img.shields.io/docsrs/qrc.svg?style=for-the-badge 'Docs.rs'
-[libs-badge]: https://img.shields.io/badge/lib.rs-v0.0.2-orange.svg?style=for-the-badge 'Lib.rs'
-[license-badge]: https://img.shields.io/crates/l/qrc.svg?style=for-the-badge 'License'
-[made-with-rust]: https://img.shields.io/badge/rust-f04041?style=for-the-badge&labelColor=c0282d&logo=rust 'Made With Rust'
+[docs-badge]: https://img.shields.io/docsrs/qrc.svg?style=for-the-badge "QRC on Docs.rs"
+[libs-badge]: https://img.shields.io/badge/lib.rs-v0.0.2-orange.svg?style=for-the-badge "QRC on Lib.rs"
+[license-badge]: https://img.shields.io/crates/l/qrc.svg?style=for-the-badge "QRC License"
+[made-with-rust]: https://img.shields.io/badge/rust-f04041?style=for-the-badge&labelColor=c0282d&logo=rust "Made With Rust"
