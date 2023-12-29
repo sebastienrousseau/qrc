@@ -13,7 +13,7 @@ license = "MIT OR Apache-2.0"
 name = "qrc"
 repository = "https://github.com/sebastienrousseau/qrc/"
 rust-version = "1.71.1"
-version = "0.0.4"
+version = "0.0.5"
 include = [
     "../../LICENSE-APACHE",
     "../../LICENSE-MIT",

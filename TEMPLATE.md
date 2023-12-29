@@ -1,31 +1,35 @@
 <!-- markdownlint-disable MD033 MD041 -->
-
-<img src="https://kura.pro/qrc/images/logos/rlg.svg"
-alt="QR Code (QRC) logo" height="261" width="261" align="right" />
-
+<img
+    src="https://kura.pro/qrc/images/logos/qrc.svg"
+    alt="RustLogs (RLG) logo"
+    title="RustLogs (RLG) logo"
+    height="261"
+    width="261"
+    align="right"
+/>
 <!-- markdownlint-enable MD033 MD041 -->
 
-# RLG
+# QRC
 
-A Rust library that implements application-level logging with a simple, readable output format.
+A Rust library for generating and manipulating QR code images in various formats 🦀
 
 [![Made With Love][made-with-rust]][05]
 [![Crates.io][crates-badge]][07]
-[![Lib.rs][libs-badge]][09]
-[![Docs.rs][docs-badge]][08]
+[![Lib.rs][libs-badge]][06]
+[![Docs.rs][docs-badge]][09]
 [![License][license-badge]][02]
 
 ![divider][divider]
 
-## Welcome to QR Code (QRC) 👋
+## Welcome to QRC
 
-![RLG Banner][banner]
+![QRC Banner][banner]
 
 <!-- markdownlint-disable MD033 -->
 <center>
 
 **[Website][00]
-• [Documentation][08]
+• [Documentation][09]
 • [Report Bug][03]
 • [Request Feature][03]
 • [Contributing Guidelines][04]**
@@ -34,41 +38,35 @@ A Rust library that implements application-level logging with a simple, readable
 
 <!-- markdownlint-enable MD033 -->
 
-## Overview 📖
+## Overview
 
-`QR Code (QRC)` is a Rust library that provides application-level logging with
-a simple, readable output format. It offers logging APIs and various helper
-macros to simplify common logging tasks.
+The QR Code Library (QRC) is a comprehensive Rust library designed to create and
+manipulate QR codes. It offers a wide range of functionalities including
+generating QR codes in various formats, customizing color schemes, adding image
+watermarks, and more.
 
-## Features ✨
+## Features
 
-- Supports many log levels: `ALL`, `DEBUG`, `DISABLED`, `ERROR`,
-  `FATAL`, `INFO`, `NONE`, `TRACE`, `VERBOSE` and `WARNING`,
-- Provides structured log formats that are easy to parse and filter,
-- Compatible with multiple output formats including:
-  - Common Event Format (CEF),
-  - Extended Log Format (ELF),
-  - Graylog Extended Log Format (GELF),
-  - JavaScript Object Notation (JSON)
-  - NCSA Common Log Format (CLF),
-  - W3C Extended Log File Format (W3C),
-  - and more.
+- Generate QR code images in multiple formats like PNG, JPG, GIF, and SVG,
+- Customize color schemes,
+- Add image watermarks,
+- Easy integration with Rust projects.
 
-[00]: https://rustlogs.com
+[00]: https://qrclib.one
 [02]: http://opensource.org/licenses/MIT
 [03]: https://github.com/sebastienrousseau/qrc/issues
-[04]: https://raw.githubusercontent.com/sebastienrousseau/qrc/main/.github/CONTRIBUTING.md
+[04]: https://raw.githubusercontent.com/sebastienrousseau/qrc/main/CONTRIBUTING.md
 [05]: https://github.com/sebastienrousseau/qrc/graphs/contributors
-[07]: https://crates.io/crates/rlg
-[08]: https://docs.rs/rlg
-[09]: https://lib.rs/crates/rlg
+[06]: https://lib.rs/crates/qrc
+[07]: https://crates.io/crates/qrc
+[09]: http://semver.org/
 
-[banner]: https://kura.pro/qrc/images/titles/title-rlg.svg "RLG Banner"
-[crates-badge]: https://img.shields.io/crates/v/rlg.svg?style=for-the-badge 'Crates.io'
+[banner]: https://kura.pro/qrc/images/titles/title-qrc.svg "QRC Banner"
+[crates-badge]: https://img.shields.io/crates/v/qrc.svg?style=for-the-badge "QRC on Crates.io"
 [divider]: https://kura.pro/common/images/elements/divider.svg "divider"
-[docs-badge]: https://img.shields.io/docsrs/rlg.svg?style=for-the-badge 'Docs.rs'
-[libs-badge]: https://img.shields.io/badge/lib.rs-v0.0.2-orange.svg?style=for-the-badge 'Lib.rs'
-[license-badge]: https://img.shields.io/crates/l/rlg.svg?style=for-the-badge 'License'
-[made-with-rust]: https://img.shields.io/badge/rust-f04041?style=for-the-badge&labelColor=c0282d&logo=rust 'Made With Rust'
+[docs-badge]: https://img.shields.io/docsrs/qrc.svg?style=for-the-badge "QRC on Docs.rs"
+[libs-badge]: https://img.shields.io/badge/lib.rs-v0.0.2-orange.svg?style=for-the-badge "QRC on Lib.rs"
+[license-badge]: https://img.shields.io/crates/l/qrc.svg?style=for-the-badge "QRC License"
+[made-with-rust]: https://img.shields.io/badge/rust-f04041?style=for-the-badge&labelColor=c0282d&logo=rust "Made With Rust"
 
 ## Changelog 📚

@@ -16,7 +16,7 @@ A Rust library for generating and manipulating QR code images in various formats
 [![Made With Love][made-with-rust]][05]
 [![Crates.io][crates-badge]][07]
 [![Lib.rs][libs-badge]][06]
-[![Docs.rs][docs-badge]][9]
+[![Docs.rs][docs-badge]][09]
 [![License][license-badge]][02]
 
 ![divider][divider]
@@ -29,7 +29,7 @@ A Rust library for generating and manipulating QR code images in various formats
 <center>
 
 **[Website][00]
-• [Documentation][9]
+• [Documentation][09]
 • [Report Bug][03]
 • [Request Feature][03]
 • [Contributing Guidelines][04]**
@@ -234,7 +234,7 @@ To use `qrc` in your project, add the following to your
 
 ```toml
 [dependencies]
-qrc = "0.0.4"
+qrc = "0.0.5"
 ```
 
 Add the following to your `main.rs` file:
