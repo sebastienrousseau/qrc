@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["qrc"];
+window.ALL_CRATES = ["qrc","xtask"];
