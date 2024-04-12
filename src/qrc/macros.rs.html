@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/macros.rs`."><title>macros.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="qrc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.78.0-nightly (98aa3624b 2024-02-08)" data-channel="nightly" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="icon" href="https://kura.pro/qrc/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title">
-            <h2>Files</h2></div></nav><div class="sidebar-resizer"></div>
-    <main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../qrc/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/macros.rs`."><title>macros.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-2c208a72533b4dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="qrc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.79.0-nightly (a07f3eb43 2024-04-11)" data-channel="nightly" data-search-js="search-ffac13a0df2b1870.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-e32f0c247825364d.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-c97aec732c613ca4.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-09095024cf37855e.css"></noscript><link rel="icon" href="https://kura.pro/qrc/favicon.ico"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../qrc/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings">Settings</a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -314,7 +312,7 @@
 ///
 /// qrc::add_image_watermark!(&amp;mut img, &amp;watermark);
 /// ```
-</span><span class="macro">macro_rules! </span>add_image_watermark {
+</span><span class="macro">macro_rules!</span> add_image_watermark {
     <span class="comment">// Defines the macro `add_image_watermark`.
     </span>(<span class="macro-nonterminal">$img</span>:expr, <span class="macro-nonterminal">$watermark</span>:expr) =&gt; {
         <span class="comment">// The macro takes two parameters: `$img` and `$watermark`.
@@ -337,7 +335,7 @@
 /// use qrc::{QRCode, qr_code};
 /// qr_code!("Hello, world!".into());
 /// ```
-</span><span class="macro">macro_rules! </span>qr_code {
+</span><span class="macro">macro_rules!</span> qr_code {
     <span class="comment">// Defines the macro `qr_code`.
     </span>(<span class="macro-nonterminal">$data</span>:expr) =&gt; {
         <span class="comment">// The macro takes one parameter: `$data`.
@@ -360,7 +358,7 @@
 /// use qrc::{QRCode, qr_code_to};
 /// qr_code_to!("Hello, world!".into(), "png", 256);
 /// ```
-</span><span class="macro">macro_rules! </span>qr_code_to {
+</span><span class="macro">macro_rules!</span> qr_code_to {
     <span class="comment">// Define the macro `qr_code_to`.
     // This macro takes three expressions: `$data`, `$format`, and `$width`.
     </span>(<span class="macro-nonterminal">$data</span>:expr, <span class="macro-nonterminal">$format</span>:expr, <span class="macro-nonterminal">$width</span>:expr) =&gt; {
@@ -398,7 +396,7 @@
 /// let qrcode = QRCode::new("Hello, world!".as_bytes().to_vec());
 /// let resized_qrcode = resize!(qrcode, 256);
 /// ```
-</span><span class="macro">macro_rules! </span>resize {
+</span><span class="macro">macro_rules!</span> resize {
     (<span class="macro-nonterminal">$qrcode</span>:expr, <span class="macro-nonterminal">$size</span>:expr) =&gt; {
         <span class="macro-nonterminal">$qrcode</span>.resize(<span class="macro-nonterminal">$size</span>, <span class="macro-nonterminal">$size</span>)
     };
@@ -421,7 +419,7 @@
 /// let qr_code = QRCode::new("some data".as_bytes().to_vec()); // Create a QRCode instance
 /// let qr_with_format = set_encoding_format!(qr_code, "utf-8"); // Use the macro to set the encoding format
 /// ```
-</span><span class="macro">macro_rules! </span>set_encoding_format {
+</span><span class="macro">macro_rules!</span> set_encoding_format {
     (<span class="macro-nonterminal">$qr_code</span>:expr, <span class="macro-nonterminal">$format</span>:expr) =&gt; {
         <span class="macro-nonterminal">$qr_code</span>.set_encoding_format(<span class="macro-nonterminal">$format</span>)
     };
@@ -449,7 +447,7 @@
 ///
 /// let qr_with_logo = overlay_image!(qr_code, &amp;logo); // Use the macro for overlaying the image
 /// ```
-</span><span class="macro">macro_rules! </span>overlay_image {
+</span><span class="macro">macro_rules!</span> overlay_image {
     (<span class="macro-nonterminal">$qr_code</span>:expr, <span class="macro-nonterminal">$image_path</span>:expr) =&gt; {
         <span class="macro-nonterminal">$qr_code</span>.overlay_image(<span class="macro-nonterminal">$image_path</span>)
     };
@@ -470,7 +468,7 @@
 /// use qrc::batch_generate_qr; // Import the macro
 /// let qr_codes = batch_generate_qr!(vec!["https://example.com".to_string(), "https://example2.com".to_string()]);
 /// ```
-</span><span class="macro">macro_rules! </span>batch_generate_qr {
+</span><span class="macro">macro_rules!</span> batch_generate_qr {
     (<span class="macro-nonterminal">$data_list</span>:expr) =&gt; {
         QRCode::batch_generate_qr_codes(<span class="macro-nonterminal">$data_list</span>)
     };
@@ -491,7 +489,7 @@
 /// use qrc::compress_data_macro; // Corrected import to use the macro
 /// let compressed_data = compress_data_macro!("Some large string of data"); // Correct usage
 /// ```
-</span><span class="macro">macro_rules! </span>compress_data_macro {
+</span><span class="macro">macro_rules!</span> compress_data_macro {
     (<span class="macro-nonterminal">$data</span>:expr) =&gt; {
         QRCode::compress_data(<span class="macro-nonterminal">$data</span>)
     };
@@ -517,7 +515,7 @@
 ///
 /// let combined_qr_code = combine_qr_codes!(vec![qr_code1, qr_code2, qr_code3]);
 /// ```
-</span><span class="macro">macro_rules! </span>combine_qr_codes {
+</span><span class="macro">macro_rules!</span> combine_qr_codes {
     (<span class="macro-nonterminal">$codes</span>:expr) =&gt; {
         QRCode::combine_qr_codes(<span class="macro-nonterminal">$codes</span>)
     };
@@ -538,7 +536,7 @@
 /// use qrc::create_dynamic_qr;
 /// create_dynamic_qr!("Initial Data");
 /// ```
-</span><span class="macro">macro_rules! </span>create_dynamic_qr {
+</span><span class="macro">macro_rules!</span> create_dynamic_qr {
     (<span class="macro-nonterminal">$initial_data</span>:expr) =&gt; {
         QRCode::create_dynamic(<span class="macro-nonterminal">$initial_data</span>)
     };
@@ -562,7 +560,7 @@
 ///     "fr" =&gt; "Bonjour"
 /// };
 /// ```
-</span><span class="macro">macro_rules! </span>create_multilanguage_qr {
+</span><span class="macro">macro_rules!</span> create_multilanguage_qr {
     ($(<span class="macro-nonterminal">$lang</span>:expr =&gt; <span class="macro-nonterminal">$text</span>:expr),* $(,)<span class="question-mark">?</span>) =&gt; {{
         <span class="kw">use </span>std::collections::HashMap;
         <span class="kw">let </span><span class="kw-2">mut </span>data_map: HashMap&lt;String, String&gt; = HashMap::new();
