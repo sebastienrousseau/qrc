@@ -33,7 +33,7 @@ members = ["xtask"]
 all-features = true
 
 [dependencies]
-flate2 = "1.0.31"
+flate2 = "1.0.32"
 image = "0.25.2"
 
 [dependencies.qrcode]
