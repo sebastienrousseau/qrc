@@ -34,7 +34,7 @@ all-features = true
 
 [dependencies]
 flate2 = "1.0.35"
-image = "0.25.5"
+image = "0.25.6"
 
 [dependencies.qrcode]
 default-features = false
