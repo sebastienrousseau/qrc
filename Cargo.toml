@@ -41,6 +41,7 @@ default-features = false
 features = ["svg"]
 optional = false
 version = "0.14.1"
+commons = { git = "https://github.com/sebastienrousseau/commons", tag = "v0.0.1", default-features = false, features = ["error"] }
 
 [dev-dependencies]
 criterion = "0.5.1"
