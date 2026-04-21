@@ -100,10 +100,10 @@
 )]
 #![crate_name = "qrc"]
 
-use flate2::{write::ZlibEncoder, Compression};
 use image::{ImageBuffer, Rgba, RgbaImage};
+use miniz_oxide::deflate::compress_to_vec_zlib;
 use qrcode::{render::svg, Color, QrCode};
-use std::{collections::HashMap, io::Write};
+use std::collections::HashMap;
 
 /// The `macros` module contains functions for generating macros.
 pub mod macros;
@@ -437,23 +437,10 @@ impl QRCode {
     ///
     /// # Returns
     ///
-    /// A `Vec<u8>` containing the compressed data. Falls back to uncompressed
-    /// bytes on compression failure.
+    /// A `Vec<u8>` containing the Zlib-compressed data.
     #[must_use]
     pub fn compress_data(data: &str) -> Vec<u8> {
-        let input_bytes = data.as_bytes();
-        let mut compressed_data = Vec::new();
-        let mut encoder = ZlibEncoder::new(&mut compressed_data, Compression::default());
-
-        if encoder.write_all(input_bytes).is_err() {
-            return input_bytes.to_vec();
-        }
-
-        if encoder.finish().is_err() {
-            return input_bytes.to_vec();
-        }
-
-        compressed_data
+        compress_to_vec_zlib(data.as_bytes(), 6)
     }
 
     /// Generates a batch of QR codes from a vector of data strings.
