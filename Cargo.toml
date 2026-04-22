@@ -6,6 +6,7 @@ A Rust library for generating and manipulating QR code images in various formats
 """
 documentation = "https://docs.rs/qrc"
 edition = "2021"
+autoexamples = false
 exclude = ["/.git/*", "/.github/*", "/.gitignore", "/.vscode/*"]
 homepage = "https://qrclib.one"
 keywords = ["barcode", "mini-functions", "qr", "qrc", "qrcode"]
@@ -53,6 +54,58 @@ name = "qrc"
 proc-macro = false
 crate-type = ["lib"]
 required-features = []
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+
+[[example]]
+name = "formats"
+path = "examples/formats.rs"
+
+[[example]]
+name = "colorize"
+path = "examples/colorize.rs"
+
+[[example]]
+name = "resize"
+path = "examples/resize.rs"
+
+[[example]]
+name = "watermark"
+path = "examples/watermark.rs"
+
+[[example]]
+name = "overlay"
+path = "examples/overlay.rs"
+
+[[example]]
+name = "compress"
+path = "examples/compress.rs"
+
+[[example]]
+name = "batch"
+path = "examples/batch.rs"
+
+[[example]]
+name = "combine"
+path = "examples/combine.rs"
+
+[[example]]
+name = "encoding"
+path = "examples/encoding.rs"
+
+[[example]]
+name = "dynamic"
+path = "examples/dynamic.rs"
+
+[[example]]
+name = "multilingual"
+path = "examples/multilingual.rs"
+
+[[example]]
+name = "macros"
+path = "examples/macros.rs"
 
 [[bench]]
 path = "benches/qrc.rs"

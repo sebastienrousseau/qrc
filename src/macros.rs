@@ -1,4 +1,4 @@
-// Copyright © 2022-2026 QRC Contributors. All rights reserved.
+// Copyright © 2022-2026 QRC. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
