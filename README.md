@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: Apache-2.0 OR MIT -->
 
 <p align="center">
-  <img src="https://kura.pro/qrc/images/logos/qrc.svg" alt="QRC logo" width="128" />
+  <img src="https://cloudcdn.pro/qrc/v1/logos/qrc.svg" alt="QRC logo" width="128" />
 </p>
 
 <h1 align="center">QR Code Library (QRC)</h1>

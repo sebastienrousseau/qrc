@@ -90,7 +90,7 @@
 #![warn(unreachable_pub)]
 #![doc(
     html_favicon_url = "https://kura.pro/qrc/favicon.ico",
-    html_logo_url = "https://kura.pro/qrc/images/logos/qrc.svg",
+    html_logo_url = "https://cloudcdn.pro/qrc/v1/logos/qrc.svg",
     html_root_url = "https://docs.rs/qrc"
 )]
 #![crate_name = "qrc"]
