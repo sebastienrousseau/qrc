@@ -1,5 +1,5 @@
 [package]
-authors = ["QRC Contributors"]
+authors = ["QRC"]
 categories = ["Algorithms", "Encoding", "Images", "Rendering", "Visualization"]
 description = """
 A Rust library for generating and manipulating QR code images in various formats
@@ -16,8 +16,8 @@ repository = "https://github.com/sebastienrousseau/qrc/"
 rust-version = "1.75.0"
 version = "0.0.6"
 include = [
-    "../../LICENSE-APACHE",
-    "../../LICENSE-MIT",
+    "/LICENSE-APACHE",
+    "/LICENSE-MIT",
     "/benches/**",
     "/Cargo.toml",
     "/examples/**",

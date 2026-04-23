@@ -88,7 +88,9 @@ mod tests {
 
         let qrcode = QRCode::from_string(URL.to_string());
         let mut qrcode_img = qrcode.to_png(512);
-        let watermark_img = image::open("bubba.ico").unwrap().into_rgba8();
+        let watermark_img = image::open("tests/fixtures/bubba.ico")
+            .unwrap()
+            .into_rgba8();
         add_image_watermark!(&mut qrcode_img, &watermark_img);
         assert_eq!(qrcode_img.dimensions(), (512, 512));
     }
@@ -100,13 +102,12 @@ mod tests {
 
         let image: RgbaImage = red_qrcode;
         for (x, y, pixel) in image.enumerate_pixels() {
-            let expected_color = if qrcode.to_qrcode()[(x as usize, y as usize)]
-                == qrcode::Color::Dark
-            {
-                Rgba([255, 0, 0, 255])
-            } else {
-                Rgba([255, 255, 255, 255])
-            };
+            let expected_color =
+                if qrcode.to_qrcode()[(x as usize, y as usize)] == qrcode::Color::Dark {
+                    Rgba([255, 0, 0, 255])
+                } else {
+                    Rgba([255, 255, 255, 255])
+                };
             assert_eq!(*pixel, expected_color);
         }
     }

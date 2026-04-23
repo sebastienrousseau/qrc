@@ -23,7 +23,10 @@ fn main() {
         let mut translations = HashMap::new();
         translations.insert("en".to_string(), "Welcome to our store!".to_string());
         translations.insert("es".to_string(), "Bienvenido a nuestra tienda!".to_string());
-        translations.insert("fr".to_string(), "Bienvenue dans notre magasin!".to_string());
+        translations.insert(
+            "fr".to_string(),
+            "Bienvenue dans notre magasin!".to_string(),
+        );
         translations.insert("de".to_string(), "Willkommen in unserem Laden!".to_string());
 
         let qr = QRCode::create_multilanguage(translations);

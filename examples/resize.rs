@@ -45,7 +45,11 @@ fn main() {
         let (w, h) = img.dimensions();
         vec![
             format!("Dimensions: {}x{} px", w, h),
-            format!("At 300 DPI: {:.1}x{:.1} inches", w as f64 / 300.0, h as f64 / 300.0),
+            format!(
+                "At 300 DPI: {:.1}x{:.1} inches",
+                w as f64 / 300.0,
+                h as f64 / 300.0
+            ),
             format!("Use case:   Flyers, posters, packaging"),
         ]
     });

@@ -1,49 +1,50 @@
-name: 🧪 Document
+# Build and deploy API documentation to GitHub Pages
+
+name: Document
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  all:
-    name: Document
+  deploy:
+    name: Build & deploy docs
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+    permissions:
+      contents: write
+
     steps:
-      - uses: hecrj/setup-rust-action@v2
-        with:
-          rust-version: nightly
+      - uses: actions/checkout@v6
 
-      - uses: actions/checkout@v4
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
 
-      - name: Update libssl
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libssl1.1
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
 
-      - name: Generate documentation for all features and publish it
+      - name: Generate documentation
         run: |
           RUSTDOCFLAGS="--cfg docsrs" \
             cargo doc --no-deps --all-features --workspace
-            # Write index.html with redirect
-            echo '<html><head><meta http-equiv="refresh" content="0; url=/qrc/"></head><body></body></html>' > ./target/doc/index.html
 
-      - name: Deploy
-        uses: actions/upload-artifact@v4
+      - name: Create index redirect
+        run: echo '<html><head><meta http-equiv="refresh" content="0; url=/qrc/"></head><body></body></html>' > ./target/doc/index.html
+
+      - name: Write CNAME file
+        run: echo 'doc.qrclib.one' > ./target/doc/CNAME
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
         with:
           name: documentation
           path: target/doc
           if-no-files-found: error
           retention-days: 1
-
-      - name: Write CNAME file
-        run: echo 'doc.qrclib.one' > ./target/doc/CNAME
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

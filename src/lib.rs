@@ -82,11 +82,6 @@
 //! | QR code watermarking | supported |
 //! | QR code with logo | supported |
 //!
-//! ## Usage
-//!
-//! - [`serde`][]: Enable serialization/deserialization via serde
-//!
-//! [`serde`]: https://github.com/serde-rs/serde
 //!
 #![deny(dead_code)]
 #![deny(missing_debug_implementations)]
@@ -317,12 +312,19 @@ impl QRCode {
             let qr_pixel = img.get_pixel(px, py);
 
             let alpha = f32::from(watermark_pixel[3]) / 255.0;
-            let new_r = (1.0 - alpha) * f32::from(qr_pixel[0]) + alpha * f32::from(watermark_pixel[0]);
-            let new_g = (1.0 - alpha) * f32::from(qr_pixel[1]) + alpha * f32::from(watermark_pixel[1]);
-            let new_b = (1.0 - alpha) * f32::from(qr_pixel[2]) + alpha * f32::from(watermark_pixel[2]);
+            let new_r =
+                (1.0 - alpha) * f32::from(qr_pixel[0]) + alpha * f32::from(watermark_pixel[0]);
+            let new_g =
+                (1.0 - alpha) * f32::from(qr_pixel[1]) + alpha * f32::from(watermark_pixel[1]);
+            let new_b =
+                (1.0 - alpha) * f32::from(qr_pixel[2]) + alpha * f32::from(watermark_pixel[2]);
             let new_a = f32::from(qr_pixel[3]) + alpha * (255.0 - f32::from(qr_pixel[3]));
 
-            img.put_pixel(px, py, Rgba([new_r as u8, new_g as u8, new_b as u8, new_a as u8]));
+            img.put_pixel(
+                px,
+                py,
+                Rgba([new_r as u8, new_g as u8, new_b as u8, new_a as u8]),
+            );
         }
     }
 
@@ -338,9 +340,7 @@ impl QRCode {
     #[must_use]
     pub fn create_multilanguage(data_map: HashMap<String, String>) -> Self {
         let user_language = "en";
-        let selected_data = data_map
-            .get(user_language)
-            .map_or("", String::as_str);
+        let selected_data = data_map.get(user_language).map_or("", String::as_str);
         QRCode::from_string(selected_data.to_string())
     }
 
@@ -359,9 +359,7 @@ impl QRCode {
 
         let dynamic_url = match dynamic_data_format {
             "url" => {
-                format!(
-                    "https://your-api-endpoint.com/update?qrcode={initial_data}"
-                )
+                format!("https://your-api-endpoint.com/update?qrcode={initial_data}")
             }
             _ => return QRCode::from_string(initial_data.to_string()),
         };
@@ -410,11 +408,7 @@ impl QRCode {
                             combined_image.put_pixel(combined_x, y, Rgba([0, 0, 0, 0]));
                         }
                         Color::Light => {
-                            combined_image.put_pixel(
-                                combined_x,
-                                y,
-                                Rgba([255, 255, 255, 255]),
-                            );
+                            combined_image.put_pixel(combined_x, y, Rgba([255, 255, 255, 255]));
                         }
                     }
                 }

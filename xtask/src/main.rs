@@ -17,7 +17,17 @@ fn main() {
     let result = match task.as_str() {
         "ci" => ci(),
         "test" => run("cargo", &["test", "--all-features"]),
-        "clippy" => run("cargo", &["clippy", "--all-targets", "--all-features", "--", "-D", "warnings"]),
+        "clippy" => run(
+            "cargo",
+            &[
+                "clippy",
+                "--all-targets",
+                "--all-features",
+                "--",
+                "-D",
+                "warnings",
+            ],
+        ),
         other => {
             eprintln!("Unknown task: {other}\n\nUsage: cargo xtask <ci|test|clippy>");
             process::exit(1);
@@ -31,7 +41,17 @@ fn main() {
 
 fn ci() -> Result<(), String> {
     run("cargo", &["fmt", "--all", "--", "--check"])?;
-    run("cargo", &["clippy", "--all-targets", "--all-features", "--", "-D", "warnings"])?;
+    run(
+        "cargo",
+        &[
+            "clippy",
+            "--all-targets",
+            "--all-features",
+            "--",
+            "-D",
+            "warnings",
+        ],
+    )?;
     run("cargo", &["test", "--all-features"])?;
     Ok(())
 }

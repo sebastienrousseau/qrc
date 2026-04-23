@@ -46,7 +46,11 @@ fn main() {
     support::task_with_output("resize! — Square resize shorthand", || {
         let qr = qr_code!("Resize me".into());
         let img = resize!(qr, 256);
-        vec![format!("resize!(qr, 256) => {}x{}", img.width(), img.height())]
+        vec![format!(
+            "resize!(qr, 256) => {}x{}",
+            img.width(),
+            img.height()
+        )]
     });
 
     // ── set_encoding_format! ───────────────────────────────────────────
