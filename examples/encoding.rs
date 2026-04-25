@@ -39,7 +39,7 @@ fn main() {
 
     // ── Using the macro ────────────────────────────────────────────────
     support::task_with_output("Set encoding via set_encoding_format! macro", || {
-        let qr = QRCode::new("data".as_bytes().to_vec());
+        let qr = QRCode::new(b"data".to_vec());
         match set_encoding_format!(qr, "utf-8") {
             Ok(updated) => vec![
                 format!("Macro:  set_encoding_format!(qr, \"utf-8\")"),

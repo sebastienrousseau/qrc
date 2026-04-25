@@ -2,11 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
-// These lines declare the copyright and licensing for the QR Code Library (QRC).
-// The library is protected by copyright law from 2022 to 2024.
-// It is dual-licensed under the Apache License 2.0 and the MIT License.
-// SPDX (Software Package Data Exchange) identifiers are used for clarity in licensing.
-
 #[macro_export]
 /// Macro to add a watermark image to a QR code.
 ///
@@ -26,14 +21,8 @@
 /// qrc::add_image_watermark!(&mut img, &watermark);
 /// ```
 macro_rules! add_image_watermark {
-    // Defines the macro `add_image_watermark`.
     ($img:expr, $watermark:expr) => {
-        // The macro takes two parameters: `$img` and `$watermark`.
-        // `$img` is an expression representing the main image.
-        // `$watermark` is an expression representing the watermark image.
         QRCode::add_image_watermark($img, $watermark)
-        // Calls the `add_image_watermark` method on the `QRCode` struct,
-        // passing the provided image and watermark.
     };
 }
 
@@ -49,17 +38,34 @@ macro_rules! add_image_watermark {
 /// qr_code!("Hello, world!".into());
 /// ```
 macro_rules! qr_code {
-    // Defines the macro `qr_code`.
     ($data:expr) => {
-        // The macro takes one parameter: `$data`.
-        // `$data` is an expression representing the data to encode in the QR code.
         QRCode::new($data)
-        // Calls the `new` method on the `QRCode` struct with the provided data.
+    };
+}
+
+#[macro_export]
+/// Macro to create a QR code with a specific error correction level.
+///
+/// # Parameters
+/// * `$data` - The data to be encoded in the QR code.
+/// * `$ec` - The error correction level (`EcLevel`).
+///
+/// # Example
+/// ```
+/// use qrc::{QRCode, EcLevel, qr_code_with_ec};
+/// let qr = qr_code_with_ec!("Hello".into(), EcLevel::H);
+/// assert_eq!(qr.ec_level, EcLevel::H);
+/// ```
+macro_rules! qr_code_with_ec {
+    ($data:expr, $ec:expr) => {
+        QRCode::new($data).with_ec_level($ec)
     };
 }
 
 #[macro_export]
 /// Macro to create a QR code in a specified format with a given width.
+///
+/// All arms return `Vec<u8>` containing the encoded image bytes.
 ///
 /// # Parameters
 /// * `$data` - The data to be encoded in the QR code.
@@ -69,33 +75,22 @@ macro_rules! qr_code {
 /// # Example
 /// ```
 /// use qrc::{QRCode, qr_code_to};
-/// qr_code_to!("Hello, world!".into(), "png", 256);
+/// let bytes = qr_code_to!("Hello, world!".into(), "png", 256);
+/// assert!(!bytes.is_empty());
 /// ```
 macro_rules! qr_code_to {
-    // Define the macro `qr_code_to`.
-    // This macro takes three expressions: `$data`, `$format`, and `$width`.
     ($data:expr, $format:expr, $width:expr) => {
-        // Match the value of `$format`.
         match $format {
-            // If `$format` is equal to "png", generate a PNG format QR code.
-            "png" => QRCode::from_bytes($data).to_png($width),
-            // If `$format` is equal to "jpg", generate a JPG format QR code.
+            "png" => QRCode::from_bytes($data).to_png_bytes($width),
             "jpg" => QRCode::from_bytes($data).to_jpg($width),
-            // If `$format` is equal to "gif", generate a GIF format QR code.
             "gif" => QRCode::from_bytes($data).to_gif($width),
-            // For any other value, cause a panic with the message "Invalid format".
             _ => panic!("Invalid format"),
-            // The underscore `_` is a catch-all pattern; if `$format` doesn't match
-            // any of the specified formats, this block will execute.
         }
     };
 }
 
 #[macro_export]
 /// Sets the size of the QR code.
-///
-/// This macro allows the user to specify the size of the QR code.
-/// The size is typically defined in terms of pixels or modules (the small squares that make up a QR code).
 ///
 /// # Parameters
 /// - `$qrcode:expr`: An instance of `QRCode`.
@@ -118,19 +113,16 @@ macro_rules! resize {
 #[macro_export]
 /// Sets the encoding format for the data in a QR code.
 ///
-/// QR codes can encode data in several formats, such as numeric, alphanumeric,
-/// or binary. This macro allows setting the preferred encoding format for the data.
-///
 /// # Parameters
 /// - `$qr_code:expr`: An instance of `QRCode`.
 /// - `$format:expr`: The encoding format for the QR code data.
 ///
 /// # Example
 /// ```
-/// use qrc::{QRCode, set_encoding_format}; // Import QRCode and the macro
+/// use qrc::{QRCode, set_encoding_format};
 ///
-/// let qr_code = QRCode::new("some data".as_bytes().to_vec()); // Create a QRCode instance
-/// let qr_with_format = set_encoding_format!(qr_code, "utf-8"); // Use the macro to set the encoding format
+/// let qr_code = QRCode::new("some data".as_bytes().to_vec());
+/// let qr_with_format = set_encoding_format!(qr_code, "utf-8");
 /// ```
 macro_rules! set_encoding_format {
     ($qr_code:expr, $format:expr) => {
@@ -141,24 +133,19 @@ macro_rules! set_encoding_format {
 #[macro_export]
 /// Overlays an image (e.g., a logo) at the center of the QR code.
 ///
-/// This is particularly useful for branding purposes, allowing the inclusion
-/// of a company logo within the QR code.
-///
 /// # Parameters
-/// - `$qr_code:expr`: QRCode instance to which the image will be overlaid.
+/// - `$qr_code:expr`: `QRCode` instance to which the image will be overlaid.
 /// - `$image_path:expr`: Path to the image file to overlay.
 ///
 /// # Example
 /// ```
-/// # // The following is a mock example, as actual file loading cannot be done in doctests
 /// use qrc::{QRCode, overlay_image};
 /// use image::{RgbaImage, ImageBuffer, Rgba};
 ///
 /// let qr_code = QRCode::new("some data".as_bytes().to_vec());
-/// // Mock an image (e.g., a small red square)
 /// let logo = ImageBuffer::from_pixel(10, 10, Rgba([255, 0, 0, 255]));
 ///
-/// let qr_with_logo = overlay_image!(qr_code, &logo); // Use the macro for overlaying the image
+/// let qr_with_logo = overlay_image!(qr_code, &logo);
 /// ```
 macro_rules! overlay_image {
     ($qr_code:expr, $image_path:expr) => {
@@ -169,16 +156,13 @@ macro_rules! overlay_image {
 #[macro_export]
 /// Generates multiple QR codes in one operation.
 ///
-/// This macro is useful for batch processing, such as generating QR codes
-/// for a list of URLs or serial numbers.
-///
 /// # Parameters
 /// - `$data_list:expr`: A vector of data strings for which QR codes are to be generated.
 ///
 /// # Example
 /// ```
-/// use qrc::QRCode; // Import QRCode type
-/// use qrc::batch_generate_qr; // Import the macro
+/// use qrc::QRCode;
+/// use qrc::batch_generate_qr;
 /// let qr_codes = batch_generate_qr!(vec!["https://example.com".to_string(), "https://example2.com".to_string()]);
 /// ```
 macro_rules! batch_generate_qr {
@@ -190,17 +174,14 @@ macro_rules! batch_generate_qr {
 #[macro_export]
 /// Compresses data before encoding it into a QR code.
 ///
-/// This is beneficial for encoding large amounts of data into a QR code
-/// by reducing the size of the data.
-///
 /// # Parameters
 /// - `$data:expr`: The data to be compressed and encoded.
 ///
 /// # Example
 /// ```
-/// use qrc::QRCode; // Import QRCode type
-/// use qrc::compress_data_macro; // Corrected import to use the macro
-/// let compressed_data = compress_data_macro!("Some large string of data"); // Correct usage
+/// use qrc::QRCode;
+/// use qrc::compress_data_macro;
+/// let compressed_data = compress_data_macro!("Some large string of data");
 /// ```
 macro_rules! compress_data_macro {
     ($data:expr) => {
@@ -211,41 +192,35 @@ macro_rules! compress_data_macro {
 #[macro_export]
 /// Combines multiple QR codes into a single QR code.
 ///
-/// This macro is useful for scenarios where multiple QR codes need to be combined,
-/// such as creating a composite QR code with several data sources.
-///
 /// # Parameters
-/// - An array of QRCode instances to combine.
+/// - An array of `QRCode` instances to combine.
 ///
 /// # Example
 /// ```
-/// use qrc::QRCode; // Import QRCode type
+/// use qrc::QRCode;
 /// use qrc::combine_qr_codes;
 ///
 /// let qr_code1 = QRCode::from_string("Data 1".to_string());
 /// let qr_code2 = QRCode::from_string("Data 2".to_string());
 /// let qr_code3 = QRCode::from_string("Data 3".to_string());
 ///
-/// let combined_qr_code = combine_qr_codes!(vec![qr_code1, qr_code2, qr_code3]);
+/// let combined_qr_code = combine_qr_codes!([qr_code1, qr_code2, qr_code3]);
 /// ```
 macro_rules! combine_qr_codes {
     ($codes:expr) => {
-        QRCode::combine_qr_codes($codes)
+        QRCode::combine_qr_codes(&$codes)
     };
 }
 
 #[macro_export]
 /// Generates a dynamic QR code, which can be updated after creation.
 ///
-/// Useful for scenarios where the data linked to the QR code might change
-/// over time, such as promotional offers or event details.
-///
 /// # Parameters
 /// - `$initial_data:expr`: The initial data for the QR code.
 ///
 /// # Example
 /// ```
-/// use qrc::QRCode; // Import QRCode type
+/// use qrc::QRCode;
 /// use qrc::create_dynamic_qr;
 /// create_dynamic_qr!("Initial Data");
 /// ```
@@ -259,29 +234,45 @@ macro_rules! create_dynamic_qr {
 /// Generates QR codes with multi-language support.
 ///
 /// The QR code displays different data based on the user's language preference.
+/// Use the `$lang_pref; ...` form to specify a preferred language, or omit it
+/// to default to `"en"`.
 ///
-/// # Parameters
-/// - Pairs of language codes and corresponding data.
+/// # Examples
 ///
-/// # Example
 /// ```
-/// use qrc::QRCode; // Import QRCode type
+/// use qrc::QRCode;
 /// use qrc::create_multilanguage_qr;
-/// create_multilanguage_qr! {
+///
+/// // Default (uses "en"):
+/// let qr = create_multilanguage_qr! {
 ///     "en" => "Hello",
 ///     "es" => "Hola",
-///     "fr" => "Bonjour"
+/// };
+///
+/// // Explicit language preference:
+/// let qr = create_multilanguage_qr! {
+///     "es";
+///     "en" => "Hello",
+///     "es" => "Hola",
 /// };
 /// ```
 macro_rules! create_multilanguage_qr {
-    ($($lang:expr => $text:expr),* $(,)?) => {{
+    // Arm with explicit language preference
+    ($lang_pref:expr; $($lang:expr => $text:expr),* $(,)?) => {{
         use std::collections::HashMap;
         let mut data_map: HashMap<String, String> = HashMap::new();
-
         $(
             data_map.insert($lang.to_string(), $text.to_string());
         )*
-
-        QRCode::create_multilanguage(data_map)
+        QRCode::create_multilanguage(&data_map, $lang_pref)
+    }};
+    // Default arm — falls back to "en"
+    ($($lang:expr => $text:expr),* $(,)?) => {{
+        use std::collections::HashMap;
+        let mut data_map: HashMap<String, String> = HashMap::new();
+        $(
+            data_map.insert($lang.to_string(), $text.to_string());
+        )*
+        QRCode::create_multilanguage(&data_map, "en")
     }};
 }

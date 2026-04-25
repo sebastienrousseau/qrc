@@ -22,7 +22,7 @@ fn main() {
         let website = QRCode::from_string("https://example.com".to_string());
         let wifi = QRCode::from_string("WIFI:T:WPA;S:Guest;P:welcome;;".to_string());
 
-        match QRCode::combine_qr_codes(vec![contact, website, wifi]) {
+        match QRCode::combine_qr_codes(&[contact, website, wifi]) {
             Ok(combined) => vec![
                 format!("Combined data: {} bytes", combined.data.len()),
                 format!("Use case:      Multi-info display card"),
@@ -37,10 +37,10 @@ fn main() {
         let qr2 = QRCode::from_string("Part 2: Body".to_string());
         let qr3 = QRCode::from_string("Part 3: Footer".to_string());
 
-        match combine_qr_codes!(vec![qr1, qr2, qr3]) {
+        match combine_qr_codes!([qr1, qr2, qr3]) {
             Ok(combined) => vec![
                 format!("Combined data: {} bytes", combined.data.len()),
-                format!("Macro:         combine_qr_codes!(vec![...])"),
+                format!("Macro:         combine_qr_codes!([...])"),
             ],
             Err(e) => vec![format!("Error: {e}")],
         }
@@ -48,7 +48,7 @@ fn main() {
 
     // ── Error handling: empty input ────────────────────────────────────
     support::task_result("Reject empty input gracefully", || {
-        QRCode::combine_qr_codes(vec![]).map(|_| "should not reach here")
+        QRCode::combine_qr_codes(&[]).map(|_| "should not reach here")
     })
     .ok();
 

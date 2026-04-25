@@ -5,7 +5,7 @@
 //!
 //! Provides animated spinner + checkmark output for a polished CLI feel.
 
-#![allow(dead_code)]
+#![allow(dead_code, clippy::pedantic)]
 
 use std::io::{self, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -20,7 +20,7 @@ const CHECK: &str = "\u{2713}";
 const CROSS: &str = "\u{2717}";
 
 /// Print the example header.
-pub(crate) fn header(title: &str) {
+pub fn header(title: &str) {
     println!();
     println!("  \x1b[1m{title}\x1b[0m");
     println!();
@@ -38,7 +38,7 @@ fn spin(label: &str, done: &Arc<AtomicBool>) {
 }
 
 /// Run a task with an animated spinner, then show a checkmark.
-pub(crate) fn task<F, R>(label: &str, f: F) -> R
+pub fn task<F, R>(label: &str, f: F) -> R
 where
     F: FnOnce() -> R,
 {
@@ -58,7 +58,7 @@ where
 }
 
 /// Run a task, then print additional detail lines beneath the checkmark.
-pub(crate) fn task_with_output<F>(label: &str, f: F)
+pub fn task_with_output<F>(label: &str, f: F)
 where
     F: FnOnce() -> Vec<String>,
 {
@@ -79,7 +79,7 @@ where
 }
 
 /// Run a task that may fail. Shows checkmark on success, cross on failure.
-pub(crate) fn task_result<F, T, E>(label: &str, f: F) -> Result<T, E>
+pub fn task_result<F, T, E>(label: &str, f: F) -> Result<T, E>
 where
     F: FnOnce() -> Result<T, E>,
     E: std::fmt::Display,
@@ -104,7 +104,7 @@ where
 }
 
 /// Show a summary line.
-pub(crate) fn summary(count: usize) {
+pub fn summary(count: usize) {
     println!();
     println!("  \x1b[1;32m{CHECK} {count} operations completed.\x1b[0m");
     println!();
@@ -112,7 +112,7 @@ pub(crate) fn summary(count: usize) {
 
 /// Create a temporary directory for example output files, run the closure,
 /// then clean up. Returns the closure's result.
-pub(crate) fn with_temp_dir<F, R>(prefix: &str, f: F) -> R
+pub fn with_temp_dir<F, R>(prefix: &str, f: F) -> R
 where
     F: FnOnce(&std::path::Path) -> R,
 {

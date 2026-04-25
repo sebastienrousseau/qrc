@@ -47,8 +47,8 @@ fn main() {
             format!("Dimensions: {}x{} px", w, h),
             format!(
                 "At 300 DPI: {:.1}x{:.1} inches",
-                w as f64 / 300.0,
-                h as f64 / 300.0
+                f64::from(w) / 300.0,
+                f64::from(h) / 300.0
             ),
             format!("Use case:   Flyers, posters, packaging"),
         ]

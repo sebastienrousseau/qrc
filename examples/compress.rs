@@ -29,6 +29,7 @@ ADR:;;123 Main St;Springfield;IL;62701;US\n\
 END:VCARD";
 
         let compressed = QRCode::compress_data(vcard);
+        #[allow(clippy::cast_precision_loss)]
         let ratio = compressed.len() as f64 / vcard.len() as f64 * 100.0;
         vec![
             format!("Original:   {} bytes", vcard.len()),
@@ -42,6 +43,7 @@ END:VCARD";
     support::task_with_output("Compress a JSON configuration payload", || {
         let json = r#"{"wifi":{"ssid":"CorpNet","password":"s3cur3!","type":"WPA2"},"proxy":{"host":"10.0.0.1","port":8080}}"#;
         let compressed = compress_data_macro!(json);
+        #[allow(clippy::cast_precision_loss)]
         let ratio = compressed.len() as f64 / json.len() as f64 * 100.0;
         vec![
             format!("Original:   {} bytes", json.len()),

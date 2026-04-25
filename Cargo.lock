@@ -845,8 +845,10 @@ version = "0.0.6"
 dependencies = [
  "criterion",
  "image",
+ "js-sys",
  "miniz_oxide",
  "qrcode",
+ "wasm-bindgen",
 ]
 
 [[package]]

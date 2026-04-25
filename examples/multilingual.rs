@@ -29,16 +29,16 @@ fn main() {
         );
         translations.insert("de".to_string(), "Willkommen in unserem Laden!".to_string());
 
-        let qr = QRCode::create_multilanguage(translations);
+        let qr = QRCode::create_multilanguage(&translations, "en");
         vec![
             format!("Selected:   \"{}\"", String::from_utf8_lossy(&qr.data)),
-            format!("Language:   en (default)"),
+            format!("Language:   en (explicit)"),
             format!("Use case:   International product packaging"),
         ]
     });
 
-    // ── Using the macro ────────────────────────────────────────────────
-    support::task_with_output("Create via create_multilanguage_qr! macro", || {
+    // ── Using the macro (default "en") ────────────────────────────────
+    support::task_with_output("Create via create_multilanguage_qr! macro (default)", || {
         let qr = create_multilanguage_qr! {
             "en" => "https://example.com/en/guide",
             "es" => "https://example.com/es/guia",
@@ -51,9 +51,24 @@ fn main() {
         ]
     });
 
+    // ── Using the macro with explicit language ─────────────────────────
+    support::task_with_output("Create via macro with language preference", || {
+        let qr = create_multilanguage_qr! {
+            "fr";
+            "en" => "https://example.com/en/guide",
+            "es" => "https://example.com/es/guia",
+            "fr" => "https://example.com/fr/guide",
+        };
+        vec![
+            format!("Encoded: {}", String::from_utf8_lossy(&qr.data)),
+            format!("Language: fr (explicit preference)"),
+        ]
+    });
+
     // ── Museum exhibit example ─────────────────────────────────────────
     support::task_with_output("Museum exhibit: audio guide links", || {
         let qr = create_multilanguage_qr! {
+            "it";
             "en" => "https://museum.example.com/audio/mona-lisa/en",
             "fr" => "https://museum.example.com/audio/la-joconde/fr",
             "it" => "https://museum.example.com/audio/la-gioconda/it",
@@ -66,5 +81,5 @@ fn main() {
         ]
     });
 
-    support::summary(3);
+    support::summary(4);
 }

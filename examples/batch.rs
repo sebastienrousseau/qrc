@@ -67,7 +67,7 @@ fn main() {
                 let filename = format!("product_{}.png", i + 1);
                 img.save(dir.join(&filename)).unwrap();
                 let size = fs::metadata(dir.join(&filename)).unwrap().len();
-                lines.push(format!("{filename}: {} bytes", size));
+                lines.push(format!("{filename}: {size} bytes"));
             }
             lines.push(format!("Total: {} files written", codes.len()));
             lines

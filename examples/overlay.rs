@@ -23,11 +23,12 @@ fn main() {
     support::with_temp_dir("overlay", |dir| {
         // ── Create a small overlay image ───────────────────────────────
         let logo = support::task("Create a 10x10 overlay logo", || {
+            #[allow(clippy::cast_precision_loss)]
             ImageBuffer::from_fn(10, 10, |x, y| {
                 // Blue circle approximation
                 let cx = 5.0_f32;
                 let cy = 5.0_f32;
-                let dist = ((x as f32 - cx).powi(2) + (y as f32 - cy).powi(2)).sqrt();
+                let dist = (x as f32 - cx).hypot(y as f32 - cy);
                 if dist < 4.5 {
                     Rgba([0, 102, 204, 255])
                 } else {

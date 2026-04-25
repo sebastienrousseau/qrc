@@ -11,7 +11,6 @@
 #[path = "support.rs"]
 mod support;
 
-use image::DynamicImage;
 use qrc::QRCode;
 use std::fs;
 
@@ -36,30 +35,26 @@ fn main() {
             ]
         });
 
-        // ── JPG output (requires RGB, not RGBA) ──────────────────────────
+        // ── JPG output ──────────────────────────────────────────────────
         support::task_with_output("Export as JPG (compressed, print-ready)", || {
-            let img = qr.to_jpg(size);
+            let jpg_bytes = qr.to_jpg(size);
             let path = dir.join("qrcode.jpg");
-            // JPEG doesn't support alpha — convert RGBA to RGB
-            DynamicImage::ImageRgba8(img).to_rgb8().save(&path).unwrap();
-            let file_size = fs::metadata(&path).unwrap().len();
+            fs::write(&path, &jpg_bytes).unwrap();
             vec![
                 format!("Dimensions: {}x{} px", size, size),
-                format!("File size:  {} bytes", file_size),
+                format!("File size:  {} bytes", jpg_bytes.len()),
                 format!("Use case:   Print materials, email attachments"),
-                format!("Note:       RGBA converted to RGB for JPEG compatibility"),
             ]
         });
 
         // ── GIF output ─────────────────────────────────────────────────
         support::task_with_output("Export as GIF (small palette, universal)", || {
-            let img = qr.to_gif(size);
+            let gif_bytes = qr.to_gif(size);
             let path = dir.join("qrcode.gif");
-            img.save(&path).unwrap();
-            let file_size = fs::metadata(&path).unwrap().len();
+            fs::write(&path, &gif_bytes).unwrap();
             vec![
                 format!("Dimensions: {}x{} px", size, size),
-                format!("File size:  {} bytes", file_size),
+                format!("File size:  {} bytes", gif_bytes.len()),
                 format!("Use case:   Legacy systems, email signatures"),
             ]
         });

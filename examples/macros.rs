@@ -14,8 +14,8 @@ mod support;
 use image::{ImageBuffer, Rgba};
 use qrc::{
     add_image_watermark, batch_generate_qr, combine_qr_codes, compress_data_macro,
-    create_dynamic_qr, create_multilanguage_qr, overlay_image, qr_code, qr_code_to, resize,
-    set_encoding_format, QRCode,
+    create_dynamic_qr, create_multilanguage_qr, overlay_image, qr_code, qr_code_to,
+    qr_code_with_ec, resize, set_encoding_format, EcLevel, QRCode,
 };
 
 fn main() {
@@ -30,15 +30,24 @@ fn main() {
         ]
     });
 
+    // ── qr_code_with_ec! ──────────────────────────────────────────────
+    support::task_with_output("qr_code_with_ec! — EC level selection", || {
+        let qr = qr_code_with_ec!("High EC".into(), EcLevel::H);
+        vec![
+            format!("EC Level: {:?}", qr.ec_level),
+            format!("Modules: {}", qr.to_qrcode().width()),
+        ]
+    });
+
     // ── qr_code_to! ───────────────────────────────────────────────────
     support::task_with_output("qr_code_to! — Create and convert in one step", || {
         let png = qr_code_to!("Hello QRC".into(), "png", 128);
         let jpg = qr_code_to!("Hello QRC".into(), "jpg", 128);
         let gif = qr_code_to!("Hello QRC".into(), "gif", 128);
         vec![
-            format!("PNG: {}x{}", png.width(), png.height()),
-            format!("JPG: {}x{}", jpg.width(), jpg.height()),
-            format!("GIF: {}x{}", gif.width(), gif.height()),
+            format!("PNG: {} bytes", png.len()),
+            format!("JPG: {} bytes", jpg.len()),
+            format!("GIF: {} bytes", gif.len()),
         ]
     });
 
@@ -100,7 +109,7 @@ fn main() {
     support::task_with_output("combine_qr_codes! — Merge QR codes", || {
         let qr1 = QRCode::from_string("Left".to_string());
         let qr2 = QRCode::from_string("Right".to_string());
-        match combine_qr_codes!(vec![qr1, qr2]) {
+        match combine_qr_codes!([qr1, qr2]) {
             Ok(combined) => vec![format!("Combined data: {} bytes", combined.data.len())],
             Err(e) => vec![format!("Error: {e}")],
         }
@@ -122,5 +131,5 @@ fn main() {
         vec![format!("Selected: {}", String::from_utf8_lossy(&qr.data))]
     });
 
-    support::summary(11);
+    support::summary(12);
 }
