@@ -98,9 +98,13 @@ fn read_response(status: &u16, resp: ureq::Response) -> HttpResponse {
 /// (The HTTP client is type-erased behind `Box<dyn HttpClient>` so there is a
 /// single, fully-testable code path rather than one per client type.)
 pub struct ReplicateProvider {
+    /// Type-erased HTTP transport (real `UreqClient` or a test mock).
     client: Box<dyn HttpClient>,
+    /// Replicate API token, sent as `Authorization: Token …`.
     token: String,
+    /// `owner/model:version` (or bare version) identifier to run.
     model_version: String,
+    /// API base URL (overridable so tests can target a local server).
     base_url: String,
 }
 

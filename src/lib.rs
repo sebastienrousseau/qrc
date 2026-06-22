@@ -61,7 +61,7 @@
 //! | Logo embedding / branded codes | supported (`raster`) |
 //! | Offline artistic blend (image-into-QR) | supported (`raster`) |
 //! | ControlNet control-image export (AI art-QR) | supported (`raster`) |
-//! | Business-card vCard payload | supported (`payload`) |
+//! | Payloads: vCard / MeCard / Wi-Fi / EMVCo | supported (`payload`) |
 //! | Arbitrary image formats (BMP/TIFF/WebP/…) | supported (`raster`) |
 //! | AI art-QR via cloud provider (Replicate) | supported (`api` feature) |
 //! | AI art-QR fully local (candle) | demo (`demos/qrc-candle`) |

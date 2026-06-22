@@ -8,6 +8,12 @@
 //! rather than showing raw text. They are plain string builders with no extra
 //! dependencies, gated behind the `payload` feature.
 
+pub mod emvco;
+pub mod mecard;
 pub mod vcard;
+pub mod wifi;
 
+pub use emvco::{MerchantAccount, MerchantPayment};
+pub use mecard::MeCard;
 pub use vcard::BusinessCard;
+pub use wifi::{WifiNetwork, WifiSecurity};
