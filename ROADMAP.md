@@ -87,9 +87,12 @@ The work is split to keep the core tight and the heavy lifting modular:
   `ai_art` example runs against Replicate with a token.
 - **Demo — landed:** `demos/qrc-candle`, a standalone CLI (its own `[workspace]`,
   detached from the core's build/CI/coverage) piping the control image into
-  `candle` Stable-Diffusion **img2img** for fully-local generation (Option 4).
-  Compile-verified against candle 0.8; weights download at run time. True
-  ControlNet conditioning is noted as the next step.
+  `candle` Stable-Diffusion for fully-local generation (Option 4). Uses a
+  **true ControlNet** (`src/controlnet.rs` — a diffusers `ControlNetModel`
+  port: conditioning embedding + UNet-mirrored encoder + zero-conv outputs,
+  injected via the UNet's `forward_with_additional_residuals`). Loads any SD1.5
+  ControlNet safetensors (default: a QR-code ControlNet). Compile-verified
+  against candle 0.8; weights download at run time.
 
 **Deferred with reason:**
 - *Full `no_std`*: blocked on the `qrcode`/`image` backends requiring `std`.

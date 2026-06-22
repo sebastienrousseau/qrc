@@ -1,15 +1,10 @@
 //! Local AI art-QR demo.
 //!
 //! Pipeline: `qrc` renders a high-ECC **control image**, then a local
-//! Stable-Diffusion **img2img** pass (via [candle]) paints artwork while the
-//! control image biases the result toward the QR structure. Weights are pulled
-//! from the Hugging Face Hub at run time (multi-GB; a GPU is strongly
-//! recommended).
-//!
-//! This is intentionally an img2img pipeline (control image as the denoising
-//! seed) because it works with stock `candle-transformers`. True ControlNet
-//! conditioning — injecting the control features into every UNet block — would
-//! scan more reliably; see the note in `README.md`.
+//! Stable-Diffusion pass (via [candle]) with a true **ControlNet** paints
+//! artwork while the control image constrains the structure so the result still
+//! scans. Weights are pulled from the Hugging Face Hub at run time (multi-GB; a
+//! GPU is strongly recommended).
 //!
 //! ```sh
 //! cargo run --release -- \
@@ -20,18 +15,25 @@
 //!
 //! [candle]: https://github.com/huggingface/candle
 
+mod controlnet;
+
 use anyhow::{Context, Result};
 use candle_core::{DType, Device, IndexOp, Module, Tensor};
+use candle_nn::VarBuilder;
+use candle_transformers::models::stable_diffusion::unet_2d::{
+    BlockConfig, UNet2DConditionModelConfig,
+};
 use candle_transformers::models::stable_diffusion::{self, StableDiffusionConfig};
 use clap::Parser;
 use std::path::PathBuf;
 use tokenizers::Tokenizer;
 
+use controlnet::ControlNet;
 use qrc::encode::{Ecc, QrOptions};
 use qrc::render::control::ControlOptions;
 use qrc::QRCode;
 
-/// Local AI art-QR generator (qrc control image + candle Stable Diffusion).
+/// Local AI art-QR generator (qrc control image + candle Stable Diffusion + ControlNet).
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
@@ -55,10 +57,10 @@ struct Args {
     #[arg(long, default_value_t = 30)]
     steps: usize,
 
-    /// img2img strength in `0.0..=1.0`: how far from the control image to roam.
-    /// Lower keeps the QR more intact (more scannable); higher is more artistic.
-    #[arg(long, default_value_t = 0.6)]
-    strength: f64,
+    /// ControlNet conditioning scale: higher constrains the art more tightly to
+    /// the QR structure (more scannable, less free); ~1.1–2.0 is typical.
+    #[arg(long, default_value_t = 1.5)]
+    conditioning_scale: f64,
 
     /// Classifier-free guidance scale.
     #[arg(long, default_value_t = 7.5)]
@@ -67,6 +69,14 @@ struct Args {
     /// Square size of the control image / generated art in pixels.
     #[arg(long, default_value_t = 768)]
     size: usize,
+
+    /// Hugging Face repo of the SD1.5 QR ControlNet.
+    #[arg(long, default_value = "monster-labs/control_v1p_sd15_qrcode_monster")]
+    controlnet_repo: String,
+
+    /// ControlNet weights filename within the repo.
+    #[arg(long, default_value = "diffusion_pytorch_model.safetensors")]
+    controlnet_file: String,
 
     /// RNG seed.
     #[arg(long, default_value_t = 42)]
@@ -77,7 +87,7 @@ struct Args {
     cpu: bool,
 }
 
-/// The Stable-Diffusion v1.5 weights/repo locations on the Hugging Face Hub.
+/// Stable-Diffusion v1.5 weight locations on the Hugging Face Hub.
 mod hub {
     pub const SD15_REPO: &str = "stable-diffusion-v1-5/stable-diffusion-v1-5";
     pub const CLIP_TOKENIZER_REPO: &str = "openai/clip-vit-base-patch32";
@@ -86,15 +96,43 @@ mod hub {
     pub const CLIP: &str = "text_encoder/model.safetensors";
 }
 
+/// The SD1.5 UNet config (also used to lay out the matching ControlNet).
+fn v15_unet_config() -> UNet2DConditionModelConfig {
+    let bc = |out_channels, use_cross_attn, attention_head_dim| BlockConfig {
+        out_channels,
+        use_cross_attn,
+        attention_head_dim,
+    };
+    UNet2DConditionModelConfig {
+        blocks: vec![
+            bc(320, Some(1), 8),
+            bc(640, Some(1), 8),
+            bc(1280, Some(1), 8),
+            bc(1280, None, 8),
+        ],
+        center_input_sample: false,
+        cross_attention_dim: 768,
+        downsample_padding: 1,
+        flip_sin_to_cos: true,
+        freq_shift: 0.,
+        layers_per_block: 2,
+        mid_block_scale_factor: 1.,
+        norm_eps: 1e-5,
+        norm_num_groups: 32,
+        sliced_attention_size: None,
+        use_linear_projection: false,
+    }
+}
+
 /// Downloads (and caches) a file from a Hugging Face repo, returning its path.
 fn hf_file(repo: &str, filename: &str) -> Result<PathBuf> {
     let api = hf_hub::api::sync::Api::new()?;
     Ok(api.model(repo.to_string()).get(filename)?)
 }
 
-/// Renders the qrc control image and loads it as a normalised `[-1, 1]` tensor
-/// of shape `(1, 3, size, size)` for the VAE encoder.
-fn control_image_tensor(args: &Args, device: &Device) -> Result<Tensor> {
+/// Loads the qrc control image as a `[0, 1]` tensor of shape `(2, 3, size, size)`
+/// (duplicated for classifier-free guidance), as ControlNet expects.
+fn control_cond_tensor(args: &Args, device: &Device) -> Result<Tensor> {
     let qr = QRCode::from_string(args.data.clone());
     let rgba = qr
         .to_control_image(
@@ -102,7 +140,6 @@ fn control_image_tensor(args: &Args, device: &Device) -> Result<Tensor> {
             &ControlOptions::with_size(args.size as u32),
         )
         .map_err(|e| anyhow::anyhow!("control image: {e}"))?;
-    // qrc may grow the canvas to fit whole modules; force the exact size.
     let rgb = image::DynamicImage::ImageRgba8(rgba)
         .resize_exact(
             args.size as u32,
@@ -111,14 +148,11 @@ fn control_image_tensor(args: &Args, device: &Device) -> Result<Tensor> {
         )
         .to_rgb8();
     let (w, h) = rgb.dimensions();
-    let data = rgb.into_raw();
-    let t = Tensor::from_vec(data, (h as usize, w as usize, 3), device)?
+    let t = Tensor::from_vec(rgb.into_raw(), (h as usize, w as usize, 3), device)?
         .permute((2, 0, 1))?
         .to_dtype(DType::F32)?;
-    // [0,255] -> [-1,1], then add the batch dimension.
-    let t = ((t / 255.0)? * 2.0)?;
-    let t = t.broadcast_sub(&Tensor::new(1f32, device)?)?;
-    Ok(t.unsqueeze(0)?)
+    let t = (t / 255.0)?.unsqueeze(0)?;
+    Ok(Tensor::cat(&[&t, &t], 0)?)
 }
 
 /// Builds the conditional+unconditional text embeddings for guidance.
@@ -140,8 +174,7 @@ fn text_embeddings(args: &Args, config: &StableDiffusionConfig, device: &Device)
             .map_err(|e| anyhow::anyhow!("encode: {e}"))?
             .get_ids()
             .to_vec();
-        let max = config.clip.max_position_embeddings;
-        tokens.resize(max, pad_id);
+        tokens.resize(config.clip.max_position_embeddings, pad_id);
         Ok(tokens)
     };
 
@@ -166,11 +199,9 @@ fn run(args: &Args) -> Result<()> {
     println!("device: {device:?}");
 
     let config = StableDiffusionConfig::v1_5(None, Some(args.size), Some(args.size));
-
-    // Text conditioning.
     let text_embeddings = text_embeddings(args, &config, &device)?;
 
-    // VAE + UNet.
+    // VAE (decode) + UNet + ControlNet.
     let vae = config.build_vae(hf_file(hub::SD15_REPO, hub::VAE)?, &device, DType::F32)?;
     let unet = config.build_unet(
         hf_file(hub::SD15_REPO, hub::UNET)?,
@@ -179,27 +210,38 @@ fn run(args: &Args) -> Result<()> {
         false,
         DType::F32,
     )?;
+    let cn_weights = hf_file(&args.controlnet_repo, &args.controlnet_file)?;
+    let cn_vs = unsafe { VarBuilder::from_mmaped_safetensors(&[cn_weights], DType::F32, &device)? };
+    let controlnet = ControlNet::new(cn_vs, 4, false, &v15_unet_config())?;
 
-    // Encode the control image into latents (img2img seed).
-    let control = control_image_tensor(args, &device)?;
-    let init_dist = vae.encode(&control)?;
-    let init_latents = (init_dist.sample()? * 0.18215)?;
+    let control_cond = control_cond_tensor(args, &device)?;
 
-    // Scheduler — start partway through the schedule per `strength`.
+    // Start from pure noise (text2img), conditioned by ControlNet every step.
     let mut scheduler = config.build_scheduler(args.steps)?;
-    let timesteps = scheduler.timesteps().to_vec();
-    let t_start =
-        args.steps - ((args.steps as f64) * args.strength).min(args.steps as f64) as usize;
-    let start_t = timesteps[t_start.min(timesteps.len() - 1)];
-
+    let latent = args.size / 8;
     device.set_seed(args.seed)?;
-    let noise = init_latents.randn_like(0.0, 1.0)?;
-    let mut latents = scheduler.add_noise(&init_latents, noise, start_t)?;
+    let mut latents = (Tensor::randn(0f32, 1f32, (1, 4, latent, latent), &device)?
+        * scheduler.init_noise_sigma())?;
 
-    for &timestep in timesteps.iter().skip(t_start) {
+    for &timestep in scheduler.timesteps().to_vec().iter() {
         let input = Tensor::cat(&[&latents, &latents], 0)?;
         let input = scheduler.scale_model_input(input, timestep)?;
-        let noise_pred = unet.forward(&input, timestep as f64, &text_embeddings)?;
+        let t = timestep as f64;
+
+        let (down_residuals, mid_residual) = controlnet.forward(
+            &input,
+            t,
+            &text_embeddings,
+            &control_cond,
+            args.conditioning_scale,
+        )?;
+        let noise_pred = unet.forward_with_additional_residuals(
+            &input,
+            t,
+            &text_embeddings,
+            Some(down_residuals.as_slice()),
+            Some(&mid_residual),
+        )?;
 
         let chunks = noise_pred.chunk(2, 0)?;
         let (uncond, cond) = (&chunks[0], &chunks[1]);
@@ -218,7 +260,7 @@ fn run(args: &Args) -> Result<()> {
         .context("failed to build output image")?;
     buffer.save(&args.output)?;
     println!("wrote {}", args.output.display());
-    println!("Tip: verify it scans before printing; lower --strength if it doesn't.");
+    println!("Tip: verify it scans; raise --conditioning-scale if it doesn't.");
     Ok(())
 }
 

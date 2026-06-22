@@ -30,29 +30,38 @@ cd demos/qrc-candle
 cargo run --release -- \
   --data "https://example.com" \
   --prompt "a serene koi pond, japanese ink wash painting, soft light" \
-  --strength 0.6 \
+  --conditioning-scale 1.5 \
   --output art-qr.png
 ```
 
-On first run the Stable-Diffusion v1.5 weights (~4 GB) are downloaded from the
-Hugging Face Hub and cached. A CUDA GPU is strongly recommended; `--cpu` works
-but is very slow.
+On first run the Stable-Diffusion v1.5 weights (~4 GB) plus the QR ControlNet
+(~1.4 GB) are downloaded from the Hugging Face Hub and cached. A CUDA GPU is
+strongly recommended; `--cpu` works but is very slow.
 
-Key flags: `--steps`, `--strength` (lower → more scannable, higher → more
-artistic), `--guidance-scale`, `--size`, `--seed`. See `--help`.
+Key flags: `--steps`, `--conditioning-scale` (higher → more scannable, lower →
+more artistic), `--guidance-scale`, `--size`, `--seed`, and
+`--controlnet-repo`/`--controlnet-file` to swap the ControlNet model. See
+`--help`.
 
-**Always test that the result scans before printing it**, and lower
-`--strength` if it doesn't.
+**Always test that the result scans before printing it**, and raise
+`--conditioning-scale` if it doesn't.
 
-## A note on ControlNet
+## ControlNet
 
-For simplicity and to work with stock `candle-transformers`, this demo uses
-**img2img** — the control image seeds the denoising process. That biases the
-output toward the QR structure but does not enforce it as strongly as true
-**ControlNet** conditioning (which injects the control features into every UNet
-block and is what dedicated QR-art models use). Adding a ControlNet UNet hook is
-the natural next step for higher scan reliability; the cloud `api` feature
-already targets ControlNet models on the provider side.
+This demo implements a **true ControlNet** (`src/controlnet.rs`): a port of the
+diffusers `ControlNetModel` (SD1.5 layout) on top of candle. candle ships the
+UNet hook (`forward_with_additional_residuals`) but not a ControlNet model, so
+this module supplies one — the conditioning embedding for the control hint, an
+encoder that mirrors the UNet's down/mid blocks (sharing their weight layout),
+and the zero-convolution output projections. Its residuals are injected into
+every UNet block each denoising step, which constrains the structure far more
+reliably than an img2img seed.
+
+It loads any standard SD1.5 ControlNet safetensors; the default targets a
+QR-code ControlNet (`monster-labs/control_v1p_sd15_qrcode_monster`).
+
+> Compile-verified against candle 0.8. Running it needs the model weights and
+> (realistically) a GPU, which is why end-to-end output isn't shown here.
 
 ## License
 
