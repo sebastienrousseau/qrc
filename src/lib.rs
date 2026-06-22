@@ -59,8 +59,11 @@
 //! | Custom colors | supported |
 //! | Pluggable encoding engine | supported |
 //! | Logo embedding / branded codes | supported (`raster`) |
+//! | Offline artistic blend (image-into-QR) | supported (`raster`) |
+//! | ControlNet control-image export (AI art-QR) | supported (`raster`) |
 //! | Business-card vCard payload | supported (`payload`) |
 //! | Arbitrary image formats (BMP/TIFF/WebP/…) | supported (`raster`) |
+//! | AI art-QR via cloud provider | planned (`api` feature) |
 //! | Styling (gradients, eye shapes) | planned (Phase 2) |
 //! | Structured payloads (WiFi/EMVCo/EPC) | planned (Phase 2) |
 //! | CLI / WASM / Python bindings | planned (Phase 3) |
@@ -791,6 +794,73 @@ impl QRCode {
         format: image::ImageFormat,
     ) -> Result<Vec<u8>> {
         let img = self.to_image_with_logo(options, raster_options, logo, logo_options)?;
+        render::raster::image_to_bytes(&img, format)
+    }
+
+    /// Renders a ControlNet-ready control image for AI art-QR pipelines
+    /// (Stable Diffusion + a QR ControlNet). Combine with [`Ecc::High`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded.
+    #[cfg(feature = "raster")]
+    pub fn to_control_image(
+        &self,
+        options: &QrOptions,
+        control_options: &render::control::ControlOptions,
+    ) -> Result<image::RgbaImage> {
+        let matrix = self.encode(options)?;
+        Ok(render::control::render(&matrix, control_options))
+    }
+
+    /// Renders and encodes a control image as bytes in the given format.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if encoding fails or the format has no encoder.
+    #[cfg(feature = "raster")]
+    pub fn to_control_image_bytes(
+        &self,
+        options: &QrOptions,
+        control_options: &render::control::ControlOptions,
+        format: image::ImageFormat,
+    ) -> Result<Vec<u8>> {
+        let img = self.to_control_image(options, control_options)?;
+        render::raster::image_to_bytes(&img, format)
+    }
+
+    /// Weaves a `background` image into the QR to produce an offline, branded,
+    /// scannable "art" code. Use [`Ecc::High`] so the blended regions remain
+    /// recoverable.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded.
+    #[cfg(feature = "raster")]
+    pub fn to_art_image(
+        &self,
+        options: &QrOptions,
+        background: &image::RgbaImage,
+        blend_options: &render::art::BlendOptions,
+    ) -> Result<image::RgbaImage> {
+        let matrix = self.encode(options)?;
+        Ok(render::art::blend(&matrix, background, blend_options))
+    }
+
+    /// Renders an art QR and encodes it as bytes in the given format.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if encoding fails or the format has no encoder.
+    #[cfg(feature = "raster")]
+    pub fn to_art_bytes(
+        &self,
+        options: &QrOptions,
+        background: &image::RgbaImage,
+        blend_options: &render::art::BlendOptions,
+        format: image::ImageFormat,
+    ) -> Result<Vec<u8>> {
+        let img = self.to_art_image(options, background, blend_options)?;
         render::raster::image_to_bytes(&img, format)
     }
 }

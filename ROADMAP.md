@@ -69,6 +69,22 @@ panic-free `combine_qr_codes`; fixed example; metadata cleanup; an independent
 - `business_card` example ties them together (vCard + uploadable logo → PNG).
 - Maintained at 100% coverage / 100% docs.
 
+**AI / artistic QR (per architecture decision) — core landed.**
+The work is split to keep the core tight and the heavy lifting modular:
+- **Core (this crate, offline, no new deps):**
+  - `render::control` + `QRCode::to_control_image{,_bytes}` — export a clean,
+    exact-square, high-contrast **ControlNet-ready control image** for AI
+    pipelines (Option 2).
+  - `render::art` + `QRCode::to_art_image{,_bytes}` — **offline artistic blend**
+    weaving a supplied image into the code (dot + solid-finder enforcement),
+    deterministic and rqrr-verified scannable (Option 3). `art_qr` example.
+- **`feature = "api"` add-on (planned):** takes the control image + a prompt and
+  calls a cloud generator (Replicate/Stability/HF) behind an injectable
+  `Provider` trait (real HTTP via a light client; mockable for tests), verifies
+  the result still scans and retries (Option 1).
+- **Demo (planned):** a PoC CLI piping the control image into `candle` for local
+  Stable-Diffusion + QR-ControlNet inference — marketing/docs (Option 4).
+
 **Deferred with reason:**
 - *Full `no_std`*: blocked on the `qrcode`/`image` backends requiring `std`.
   The architecture is `no_std`-ready (core logic is `alloc`-based behind the

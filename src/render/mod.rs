@@ -14,6 +14,10 @@ pub mod svg;
 pub mod unicode;
 
 #[cfg(feature = "raster")]
+pub mod art;
+#[cfg(feature = "raster")]
+pub mod control;
+#[cfg(feature = "raster")]
 pub mod raster;
 
 pub use style::{Color, ModuleShape};

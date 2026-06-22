@@ -72,6 +72,5 @@ fn main() {
         png.len(),
         path.display()
     );
-    std::fs::remove_file(&path).ok();
-    println!("Tip: replace the synthetic logo with `image::open(\"my-logo.png\")?.into_rgba8()`.");
+    println!("Open it to scan, or replace the synthetic logo with `image::open(\"my-logo.png\")?.into_rgba8()`.");
 }
