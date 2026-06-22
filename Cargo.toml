@@ -51,11 +51,13 @@ rqrr = "0.10.1"
 # `raster` pulls in the `image` crate for RGBA rendering and PNG/JPEG/GIF
 # byte encoders plus the legacy image helpers. `svg` and `unicode` are pure
 # string renderers with no extra dependencies.
-default = ["std", "raster", "svg", "unicode"]
+default = ["std", "raster", "svg", "unicode", "payload"]
 std = []
 raster = ["dep:image", "std"]
 svg = []
 unicode = []
+# Structured payload builders (vCard business cards, …): pure string, no deps.
+payload = []
 
 [lib]
 path = "src/lib.rs"

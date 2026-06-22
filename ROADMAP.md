@@ -59,6 +59,16 @@ panic-free `combine_qr_codes`; fixed example; metadata cleanup; an independent
   `raster_formats`, `terminal`, `legacy_and_macros` — each runs and exercises
   the full public surface incl. all macros and the free renderer functions.
 
+**Phase 2 (differentiation) — started.**
+- **Branded codes with logo embedding** (`render::raster::{LogoOptions,
+  embed_logo, render_with_logo}` + `QRCode::to_image_with_logo` /
+  `to_image_bytes_with_logo`): centred, aspect-preserving, padded knockout,
+  ECC-High aware. A round-trip decode test proves a logo'd code still scans.
+- **vCard business-card payload** (`payload::vcard::BusinessCard`, feature
+  `payload`, no deps): RFC-6350 vCard 3.0 with proper escaping.
+- `business_card` example ties them together (vCard + uploadable logo → PNG).
+- Maintained at 100% coverage / 100% docs.
+
 **Deferred with reason:**
 - *Full `no_std`*: blocked on the `qrcode`/`image` backends requiring `std`.
   The architecture is `no_std`-ready (core logic is `alloc`-based behind the

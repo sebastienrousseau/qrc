@@ -11,6 +11,7 @@ use self::qrc::render::raster::RasterOptions;
 use self::qrc::render::svg::SvgOptions;
 use self::qrc::QRCode;
 
+/// Representative payload encoded across the benchmarks.
 const URL: &str = "https://example.com/benchmark-payload";
 
 /// Benchmark for the layered encode path (bytes -> Matrix).

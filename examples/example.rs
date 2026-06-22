@@ -9,7 +9,8 @@ extern crate qrc;
 use self::qrc::{add_image_watermark, qr_code, qr_code_to, QRCode};
 use std::fs; // Import the fs module from the standard library // Import the QRCode struct from the mini_functions crate
 
-const URL: &str = "https://minifunctions.com/"; // Define a constant for the URL to be encoded
+/// The URL encoded by this example.
+const URL: &str = "https://minifunctions.com/";
 
 fn main() {
     // Create a new QRCode using the QRCode::from_string() function and convert it to a PNG representation

@@ -58,9 +58,11 @@
 //! | Terminal / Unicode output | supported (`unicode`) |
 //! | Custom colors | supported |
 //! | Pluggable encoding engine | supported |
-//! | WebP / EPS / PDF output | planned |
-//! | Styling (gradients, eye shapes, logo) | planned (Phase 2) |
-//! | Structured payloads (WiFi/vCard/EMVCo/EPC) | planned (Phase 2) |
+//! | Logo embedding / branded codes | supported (`raster`) |
+//! | Business-card vCard payload | supported (`payload`) |
+//! | Arbitrary image formats (BMP/TIFF/WebP/…) | supported (`raster`) |
+//! | Styling (gradients, eye shapes) | planned (Phase 2) |
+//! | Structured payloads (WiFi/EMVCo/EPC) | planned (Phase 2) |
 //! | CLI / WASM / Python bindings | planned (Phase 3) |
 //!
 //! ## Usage
@@ -103,6 +105,8 @@ pub mod macros;
 pub mod encode;
 pub mod error;
 pub mod matrix;
+#[cfg(feature = "payload")]
+pub mod payload;
 pub mod render;
 
 pub use encode::{Ecc, Engine, QrOptions, QrcodeEngine};
@@ -742,5 +746,51 @@ impl QRCode {
     ) -> Result<Vec<u8>> {
         let matrix = self.encode(options)?;
         render::raster::to_bytes(&matrix, raster_options, format)
+    }
+
+    /// Renders a branded QR image with `logo` embedded at its centre.
+    ///
+    /// Use [`Ecc::High`] in `options` so the modules hidden behind the logo can
+    /// still be recovered. Pairs naturally with [`payload::vcard::BusinessCard`]
+    /// to build a contactless business card.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded.
+    #[cfg(feature = "raster")]
+    pub fn to_image_with_logo(
+        &self,
+        options: &QrOptions,
+        raster_options: &render::raster::RasterOptions,
+        logo: &image::RgbaImage,
+        logo_options: &render::raster::LogoOptions,
+    ) -> Result<image::RgbaImage> {
+        let matrix = self.encode(options)?;
+        Ok(render::raster::render_with_logo(
+            &matrix,
+            raster_options,
+            logo,
+            logo_options,
+        ))
+    }
+
+    /// Renders a branded QR with an embedded `logo` and encodes it in the given
+    /// [`image::ImageFormat`] (e.g. PNG).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded or the format has no
+    /// encoder.
+    #[cfg(feature = "raster")]
+    pub fn to_image_bytes_with_logo(
+        &self,
+        options: &QrOptions,
+        raster_options: &render::raster::RasterOptions,
+        logo: &image::RgbaImage,
+        logo_options: &render::raster::LogoOptions,
+        format: image::ImageFormat,
+    ) -> Result<Vec<u8>> {
+        let img = self.to_image_with_logo(options, raster_options, logo, logo_options)?;
+        render::raster::image_to_bytes(&img, format)
     }
 }
