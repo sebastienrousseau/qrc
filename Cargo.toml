@@ -13,7 +13,7 @@ license = "MIT OR Apache-2.0"
 name = "qrc"
 repository = "https://github.com/sebastienrousseau/qrc/"
 rust-version = "1.71.1"
-version = "0.0.5"
+version = "0.0.6"
 include = [
     "../../LICENSE-APACHE",
     "../../LICENSE-MIT",
@@ -33,8 +33,8 @@ members = ["xtask"]
 all-features = true
 
 [dependencies]
-flate2 = "1.0.35"
-image = "0.25.5"
+flate2 = { version = "1.0.35", optional = true }
+image = { version = "0.25.5", optional = true }
 
 [dependencies.qrcode]
 default-features = false
@@ -44,14 +44,25 @@ version = "0.14.1"
 
 [dev-dependencies]
 criterion = "0.5.1"
+image = "0.25.5"
+rqrr = "0.10.1"
 
 [features]
-default = []
+# `std` gates the `std::error::Error` impl and is required by `raster`.
+# `raster` pulls in the `image` crate for RGBA rendering and PNG/JPEG/GIF
+# byte encoders plus the legacy image helpers. `svg` and `unicode` are pure
+# string renderers with no extra dependencies.
+default = ["std", "raster", "svg", "unicode"]
+std = []
+raster = ["dep:image", "std"]
+svg = []
+unicode = []
+# Legacy helpers retained for backwards compatibility; see ROADMAP.md.
+legacy-compress = ["dep:flate2", "std"]
 
 [lib]
 path = "src/lib.rs"
 name = "qrc"
-plugin = false
 proc-macro = false
 crate-type = ["lib"]
 required-features = []
@@ -59,8 +70,6 @@ required-features = []
 [[bench]]
 path = "benches/qrc.rs"
 name = "qrc"
-plugin = false
-proc-macro = false
 harness = false
 required-features = []
 

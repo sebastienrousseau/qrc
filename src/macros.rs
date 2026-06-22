@@ -25,6 +25,7 @@
 ///
 /// qrc::add_image_watermark!(&mut img, &watermark);
 /// ```
+#[cfg(feature = "raster")]
 macro_rules! add_image_watermark {
     // Defines the macro `add_image_watermark`.
     ($img:expr, $watermark:expr) => {
@@ -71,6 +72,7 @@ macro_rules! qr_code {
 /// use qrc::{QRCode, qr_code_to};
 /// qr_code_to!("Hello, world!".into(), "png", 256);
 /// ```
+#[cfg(feature = "raster")]
 macro_rules! qr_code_to {
     // Define the macro `qr_code_to`.
     // This macro takes three expressions: `$data`, `$format`, and `$width`.
@@ -109,6 +111,7 @@ macro_rules! qr_code_to {
 /// let qrcode = QRCode::new("Hello, world!".as_bytes().to_vec());
 /// let resized_qrcode = resize!(qrcode, 256);
 /// ```
+#[cfg(feature = "raster")]
 macro_rules! resize {
     ($qrcode:expr, $size:expr) => {
         $qrcode.resize($size, $size)
@@ -160,6 +163,7 @@ macro_rules! set_encoding_format {
 ///
 /// let qr_with_logo = overlay_image!(qr_code, &logo); // Use the macro for overlaying the image
 /// ```
+#[cfg(feature = "raster")]
 macro_rules! overlay_image {
     ($qr_code:expr, $image_path:expr) => {
         $qr_code.overlay_image($image_path)
@@ -198,10 +202,13 @@ macro_rules! batch_generate_qr {
 ///
 /// # Example
 /// ```
+/// # #[cfg(feature = "legacy-compress")] {
 /// use qrc::QRCode; // Import QRCode type
 /// use qrc::compress_data_macro; // Corrected import to use the macro
 /// let compressed_data = compress_data_macro!("Some large string of data"); // Correct usage
+/// # }
 /// ```
+#[cfg(feature = "legacy-compress")]
 macro_rules! compress_data_macro {
     ($data:expr) => {
         QRCode::compress_data($data)
@@ -228,6 +235,7 @@ macro_rules! compress_data_macro {
 ///
 /// let combined_qr_code = combine_qr_codes!(vec![qr_code1, qr_code2, qr_code3]);
 /// ```
+#[cfg(feature = "raster")]
 macro_rules! combine_qr_codes {
     ($codes:expr) => {
         QRCode::combine_qr_codes($codes)

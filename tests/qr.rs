@@ -8,6 +8,25 @@ mod tests {
 
     const URL: &str = "https://minifunctions.com/"; // Define a constant for the URL to be encoded
 
+    /// Proves the rendered raster output is actually scannable by decoding it
+    /// back with an independent decoder (`rqrr`). This guards against the
+    /// historical bugs where dark modules were transparent and no quiet zone
+    /// was emitted, which produced unscannable images.
+    #[test]
+    fn test_png_round_trip_decodes() {
+        let payload = "https://example.com/round-trip";
+        let qrcode = QRCode::from_string(payload.to_string());
+        let img = qrcode.to_png(512);
+
+        // rqrr works on luma images.
+        let luma = image::DynamicImage::ImageRgba8(img).into_luma8();
+        let mut prepared = rqrr::PreparedImage::prepare(luma);
+        let grids = prepared.detect_grids();
+        assert_eq!(grids.len(), 1, "exactly one QR grid should be detectable");
+        let (_meta, decoded) = grids[0].decode().expect("grid should decode");
+        assert_eq!(decoded, payload);
+    }
+
     #[test]
     fn test_new() {
         let data = vec![0x61, 0x62, 0x63];
@@ -43,11 +62,21 @@ mod tests {
         assert_eq!(qrcode.data, data);
 
         let qrcode = QRCode::from_string("Hello, world!".to_string());
-        let png = qrcode.to_png(21);
-        assert_eq!(png.dimensions(), (21, 21));
+        // "Hello, world!" encodes to a 21x21 (version 1) module grid; with the
+        // mandatory 4-module quiet zone on each side that is 29 modules. At a
+        // requested width of 256px the integer module size is 256/29 = 8px, so
+        // the rendered image is 29 * 8 = 232px square.
+        let png = qrcode.to_png(256);
+        assert_eq!(png.dimensions(), (232, 232));
 
-        let png_data = png.into_raw();
-        assert_eq!(png_data.len(), 1764);
+        // Dark modules must be opaque black so the code is scannable.
+        let qr = qrcode.to_qrcode();
+        let module_px = 256 / (qr.width() as u32 + 8);
+        // Top-left finder pattern corner sits just inside the quiet zone and is dark.
+        let inset = 4 * module_px;
+        assert_eq!(*png.get_pixel(inset, inset), Rgba([0, 0, 0, 255]));
+        // A pixel well inside the quiet zone must be opaque white.
+        assert_eq!(*png.get_pixel(0, 0), Rgba([255, 255, 255, 255]));
     }
     #[test]
     fn test_to_svg() {
@@ -67,7 +96,9 @@ mod tests {
 
         let qrcode = QRCode::from_string(URL.to_string());
         let qrcode_gif = qrcode.to_gif(512);
-        assert_eq!(qrcode_gif.len(), 1048576);
+        let (w, h) = qrcode_gif.dimensions();
+        assert_eq!(w, h);
+        assert!(w <= 512 && w > 0);
     }
     #[test]
     fn test_to_jpg() {
@@ -77,7 +108,9 @@ mod tests {
 
         let qrcode = QRCode::from_string(URL.to_string());
         let qrcode_jpg = qrcode.to_jpg(512);
-        assert_eq!(qrcode_jpg.len(), 1048576);
+        let (w, h) = qrcode_jpg.dimensions();
+        assert_eq!(w, h);
+        assert!(w <= 512 && w > 0);
     }
     #[test]
     fn test_add_image_watermark() {
@@ -87,9 +120,11 @@ mod tests {
 
         let qrcode = QRCode::from_string(URL.to_string());
         let mut qrcode_img = qrcode.to_png(512);
+        let expected = qrcode_img.dimensions();
         let watermark_img = image::open("bubba.ico").unwrap().into_rgba8();
         add_image_watermark!(&mut qrcode_img, &watermark_img);
-        assert_eq!(qrcode_img.dimensions(), (512, 512));
+        // Watermarking is applied in place and must not change the dimensions.
+        assert_eq!(qrcode_img.dimensions(), expected);
     }
     #[test]
     fn test_colorize() {
@@ -102,13 +137,12 @@ mod tests {
         // Convert the QR code to a PNG image and assert that all of the dark cells are red.
         let image: RgbaImage = red_qrcode;
         for (x, y, pixel) in image.enumerate_pixels() {
-            let expected_color = if qrcode.to_qrcode()[(x as usize, y as usize)]
-                == qrcode::Color::Dark
-            {
-                Rgba([255, 0, 0, 255])
-            } else {
-                Rgba([255, 255, 255, 255])
-            };
+            let expected_color =
+                if qrcode.to_qrcode()[(x as usize, y as usize)] == qrcode::Color::Dark {
+                    Rgba([255, 0, 0, 255])
+                } else {
+                    Rgba([255, 255, 255, 255])
+                };
             assert_eq!(*pixel, expected_color);
         }
     }

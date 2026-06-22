@@ -14,9 +14,7 @@ const URL: &str = "https://minifunctions.com/"; // Define a constant for the URL
 fn main() {
     // Create a new QRCode using the QRCode::from_string() function and convert it to a PNG representation
     let qrcode = QRCode::from_string(URL.to_string()); // Create a new QRCode using the QRCode::from_string() function
-    let png = qrcode.to_png(512); // Convert the QRCode into a PNG representation
-    let png_data = png.into_raw(); // Convert the PNG representation of the QRCode into a vector of bytes
-    let png_image = ImageBuffer::<Rgba<u8>, Vec<u8>>::from_raw(21, 21, png_data).unwrap();
+    let png_image = qrcode.to_png(512); // Convert the QRCode into a 512px PNG image (quiet-zoned, integer-scaled)
     println!(
         "🦀 fn to_png():                ✅ {:?}",
         png_image.save("qrcode.png")

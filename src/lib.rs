@@ -30,65 +30,53 @@
 //!
 //! ## Features
 //!
-//! `QRC` features a `QRCode` struct that can be constructed with a
-//! `Vec<u8>` of data or a `String` of data that will be converted to
-//! a `Vec<u8>`.
+//! QRC is organised in two layers:
 //!
-//! The QR code can be generated using the zto_qrcode` method, and
-//! specific image formats can be generated using the `to_png`,
-//! `to_jpg`, and `to_gif` methods.
+//! - The [`encode`] layer turns bytes into a renderer-ready [`Matrix`] via the
+//!   pluggable [`Engine`] trait (default backend: the `qrcode` crate). Control
+//!   error correction, version and quiet zone through [`QrOptions`].
+//! - The [`render`] layer turns a [`Matrix`] into output: [`render::svg`]
+//!   (SVG-first, styleable), [`render::raster`] (RGBA plus real PNG/JPEG/GIF
+//!   byte encoders, behind the `raster` feature) and [`render::unicode`]
+//!   (terminal output).
 //!
-//! Each of these methods takes a `width` parameter and returns an
-//! `ImageBuffer` containing the QR code image.
+//! All generated codes carry the mandatory quiet zone, use integer module
+//! scaling and draw opaque modules, so they are scannable by construction —
+//! verified by round-trip decode tests.
 //!
-//! The library uses the qrcode and image crates to generate the QR
-//! code images.
+//! Capability status for this version (0.0.6):
 //!
-//! As of the current version, the library supports the following
-//! features with the following status:
-//!
-//! | Feature | Description |
-//! | ------- | ----------- |
-//! | Library license | Apache-2.0 OR MIT |
-//! | Library version | 0.0.1 |
-//! | Mode Numeric | not specified |
-//! | Mode Alphanumeric | not specified |
-//! | Mode Byte | not specified |
-//! | Mode Kanji | not specified |
-//! | Mode ECI | not specified |
-//! | Mode FNC1 | not specified |
-//! | Mode Structured Append | not specified |
-//! | Mode Hanzi | not specified |
-//! | Mixing modes | not specified |
-//! | QR Codes version 1 - 40 | not specified |
-//! | Micro QR Codes version M1 - M4 | not specified |
-//! | Find maximal error correction level | not specified |
-//! | Optimize QR Codes | not specified |
-//! | PNG output | supported |
-//! | JPG output | supported |
-//! | GIF output | supported |
-//! | SVG output | supported |
-//! | EPS output | not specified |
-//! | PDF output | not specified |
-//! | BMP output | not specified |
-//! | TIFF output | not specified |
-//! | WebP output | not specified |
-//! | Black and white QR Codes | Yes |
-//! | Colorized QR code | Yes |
-//! | Animated QR Codes (GIF, APNG, WebP) | not specified |
-//! | Changing size of modules (scaling factor) | not specified |
-//! | Command line script | not specified |
-//! | QR code resizing | supported |
-//! | QR code watermarking | supported |
-//! | QR code with logo | supported |
+//! | Capability | Status |
+//! | ---------- | ------ |
+//! | Modes Numeric / Alphanumeric / Byte (auto) | supported (via `qrcode`) |
+//! | Kanji / ECI / FNC1 / Structured Append / Micro QR | planned (see ROADMAP.md) |
+//! | QR versions 1–40, forced or auto | supported |
+//! | Error-correction level (L/M/Q/H) | supported |
+//! | Quiet zone (configurable, default 4) | supported |
+//! | PNG / JPEG / GIF byte encoders | supported (`raster`) |
+//! | SVG output (square / rounded / circle modules) | supported (`svg`) |
+//! | Terminal / Unicode output | supported (`unicode`) |
+//! | Custom colors | supported |
+//! | Pluggable encoding engine | supported |
+//! | WebP / EPS / PDF output | planned |
+//! | Styling (gradients, eye shapes, logo) | planned (Phase 2) |
+//! | Structured payloads (WiFi/vCard/EMVCo/EPC) | planned (Phase 2) |
+//! | CLI / WASM / Python bindings | planned (Phase 3) |
 //!
 //! ## Usage
 //!
-//! - [`serde`][]: Enable serialization/deserialization via serde
+//! ```
+//! use qrc::{QRCode, QrOptions, Ecc};
+//! use qrc::render::svg::SvgOptions;
 //!
-//! [`serde`]: https://github.com/serde-rs/serde
+//! let qr = QRCode::from_string("https://example.com".to_string());
+//! let opts = QrOptions::new().ecc(Ecc::High);
 //!
-#![cfg_attr(feature = "bench", feature(test))]
+//! // SVG-first, no image dependency required.
+//! let svg = qr.to_svg_styled(&opts, &SvgOptions::default()).unwrap();
+//! assert!(svg.starts_with("<svg"));
+//! ```
+//!
 #![deny(dead_code)]
 #![deny(missing_debug_implementations)]
 #![deny(missing_docs)]
@@ -97,21 +85,34 @@
 #![doc(
     html_favicon_url = "https://kura.pro/qrc/favicon.ico",
     html_logo_url = "https://kura.pro/qrc/images/logos/qrc.svg",
-    html_root_url = "https://docs.rs/mini-functions"
+    html_root_url = "https://docs.rs/qrc"
 )]
 #![crate_name = "qrc"]
 #![crate_type = "lib"]
 
-extern crate image;
 extern crate qrcode;
 
+#[cfg(feature = "legacy-compress")]
 use flate2::{write::ZlibEncoder, Compression};
+#[cfg(feature = "raster")]
 use image::{ImageBuffer, Rgba, RgbaImage};
-use qrcode::{render::svg, Color, QrCode};
-use std::{collections::HashMap, io::Write};
+use qrcode::{render::svg, QrCode};
+use std::collections::HashMap;
+#[cfg(feature = "legacy-compress")]
+use std::io::Write;
 
 /// The `macros` module contains functions for generating macros.
 pub mod macros;
+
+pub mod encode;
+pub mod error;
+pub mod matrix;
+pub mod render;
+
+pub use encode::{Ecc, Engine, QrOptions, QrcodeEngine};
+pub use error::{QrError, Result};
+pub use matrix::Matrix;
+pub use render::{Color as StyleColor, ModuleShape};
 
 #[non_exhaustive]
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -178,9 +179,80 @@ impl QRCode {
         }
     }
 
-    /// Converts the QRCode structure to a QrCode structure.
+    /// Converts the QRCode structure to a `QrCode`, returning an error
+    /// instead of panicking when the data exceeds QR capacity.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`qrcode::types::QrError`] if the data cannot be encoded
+    /// (for example, when it exceeds the maximum capacity of a QR code).
+    pub fn try_to_qrcode(&self) -> core::result::Result<QrCode, qrcode::types::QrError> {
+        QrCode::new(&self.data)
+    }
+
+    /// Converts the QRCode structure to a `QrCode` structure.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the data cannot be encoded as a QR code (e.g. it exceeds
+    /// the maximum capacity). Prefer [`QRCode::try_to_qrcode`] for fallible
+    /// encoding of untrusted input.
     pub fn to_qrcode(&self) -> QrCode {
-        QrCode::new(&self.data).unwrap()
+        self.try_to_qrcode()
+            .expect("data could not be encoded as a QR code; use try_to_qrcode for untrusted input")
+    }
+
+    /// Renders the encoded QR code into an opaque RGBA image of the given
+    /// pixel `width` (square), including the mandatory quiet zone and using
+    /// integer module scaling so every module is exactly the same size.
+    ///
+    /// Dark modules are opaque black and light modules are opaque white,
+    /// which keeps the code scannable on any background. Use
+    /// [`QRCode::render_image_with`] to choose custom colors.
+    #[cfg(feature = "raster")]
+    fn render_image(&self, qrcode: &QrCode, width: u32) -> RgbaImage {
+        self.render_image_with(
+            qrcode,
+            width,
+            Rgba([0, 0, 0, 255]),
+            Rgba([255, 255, 255, 255]),
+        )
+    }
+
+    /// Renders the QR code into an RGBA image with explicit `dark`/`light`
+    /// colors, a 4-module quiet zone, and integer module scaling.
+    #[cfg(feature = "raster")]
+    fn render_image_with(
+        &self,
+        qrcode: &QrCode,
+        width: u32,
+        dark: Rgba<u8>,
+        light: Rgba<u8>,
+    ) -> RgbaImage {
+        const QUIET_ZONE: u32 = 4;
+        let modules = qrcode.width() as u32;
+        let total_modules = modules + 2 * QUIET_ZONE;
+
+        // Integer module size keeps every module identical; never sub-pixel.
+        let module_px = (width / total_modules).max(1);
+        let img_size = module_px * total_modules;
+
+        let mut img: RgbaImage = ImageBuffer::from_pixel(img_size, img_size, light);
+        for my in 0..modules {
+            for mx in 0..modules {
+                if qrcode[(mx as usize, my as usize)] != qrcode::Color::Dark {
+                    continue;
+                }
+                let px0 = (mx + QUIET_ZONE) * module_px;
+                let py0 = (my + QUIET_ZONE) * module_px;
+                for dy in 0..module_px {
+                    for dx in 0..module_px {
+                        img.put_pixel(px0 + dx, py0 + dy, dark);
+                    }
+                }
+            }
+        }
+        img
     }
 
     /// Converts the QRCode structure to a PNG image.
@@ -202,21 +274,13 @@ impl QRCode {
     /// # Returns
     ///
     /// An `ImageBuffer` representing the QR code in PNG format.
+    #[cfg(feature = "raster")]
     pub fn to_png(&self, width: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
         let qrcode = self.to_qrcode();
-        let height = width;
-        let mut img = ImageBuffer::new(width, height);
-        for (x, y, pixel) in img.enumerate_pixels_mut() {
-            let x_index = (x as f32 / width as f32) * qrcode.width() as f32;
-            let y_index = (y as f32 / height as f32) * qrcode.width() as f32;
-            *pixel = match qrcode[(x_index as usize, y_index as usize)] {
-                qrcode::Color::Dark => Rgba([0, 0, 0, 0]),
-                qrcode::Color::Light => Rgba([255, 255, 255, 255]),
-            };
-        }
-        img
+        self.render_image(&qrcode, width)
     }
-    /// Converts the QRCode structure to a JPG image.
+    /// Converts the QRCode structure to a raster image suitable for saving
+    /// as JPG.
     ///
     /// # Parameters
     ///
@@ -224,22 +288,16 @@ impl QRCode {
     ///
     /// # Returns
     ///
-    /// An `ImageBuffer` representing the QR code in JPG format.
+    /// An `ImageBuffer` of the QR code. Note that JPEG does not support an
+    /// alpha channel; the buffer uses opaque colors so it renders correctly
+    /// when saved as JPG.
+    #[cfg(feature = "raster")]
     pub fn to_jpg(&self, width: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
         let qrcode = self.to_qrcode();
-        let height = width;
-        let mut img = ImageBuffer::new(width, height);
-        for (x, y, pixel) in img.enumerate_pixels_mut() {
-            let x_index = (x as f32 / width as f32) * qrcode.width() as f32;
-            let y_index = (y as f32 / height as f32) * qrcode.width() as f32;
-            *pixel = match qrcode[(x_index as usize, y_index as usize)] {
-                qrcode::Color::Dark => Rgba([0, 0, 0, 0]),
-                qrcode::Color::Light => Rgba([255, 255, 255, 255]),
-            };
-        }
-        img
+        self.render_image(&qrcode, width)
     }
-    /// Converts the QRCode structure to a GIF image.
+    /// Converts the QRCode structure to a raster image suitable for saving
+    /// as GIF.
     ///
     /// # Parameters
     ///
@@ -247,20 +305,11 @@ impl QRCode {
     ///
     /// # Returns
     ///
-    /// An `ImageBuffer` representing the QR code in GIF format.
+    /// An `ImageBuffer` of the QR code.
+    #[cfg(feature = "raster")]
     pub fn to_gif(&self, width: u32) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
         let qrcode = self.to_qrcode();
-        let height = width;
-        let mut img = ImageBuffer::new(width, height);
-        for (x, y, pixel) in img.enumerate_pixels_mut() {
-            let x_index = (x as f32 / width as f32) * qrcode.width() as f32;
-            let y_index = (y as f32 / height as f32) * qrcode.width() as f32;
-            *pixel = match qrcode[(x_index as usize, y_index as usize)] {
-                qrcode::Color::Dark => Rgba([0, 0, 0, 0]),
-                qrcode::Color::Light => Rgba([255, 255, 255, 255]),
-            };
-        }
-        img
+        self.render_image(&qrcode, width)
     }
 
     /// Converts the QRCode structure to an SVG image.
@@ -292,6 +341,7 @@ impl QRCode {
     /// # Returns
     ///
     /// A colorized `RgbaImage` of the QR code.
+    #[cfg(feature = "raster")]
     pub fn colorize(&self, color: Rgba<u8>) -> RgbaImage {
         let qrcode = self.to_qrcode();
         let mut img: RgbaImage = ImageBuffer::new(qrcode.width() as u32, qrcode.width() as u32);
@@ -316,6 +366,7 @@ impl QRCode {
     /// # Returns
     ///
     /// A resized `RgbaImage` of the QR code.
+    #[cfg(feature = "raster")]
     pub fn resize(&self, width: u32, height: u32) -> RgbaImage {
         let qrcode = self.to_qrcode();
         let mut img: RgbaImage = ImageBuffer::new(width, height);
@@ -324,7 +375,7 @@ impl QRCode {
                 let x_index = (x as f32 / width as f32) * qrcode.width() as f32;
                 let y_index = (y as f32 / height as f32) * qrcode.width() as f32;
                 let c = match qrcode[(x_index as usize, y_index as usize)] {
-                    qrcode::Color::Dark => Rgba([0, 0, 0, 0]),
+                    qrcode::Color::Dark => Rgba([0, 0, 0, 255]),
                     qrcode::Color::Light => Rgba([255, 255, 255, 255]),
                 };
                 img.put_pixel(x, y, c);
@@ -339,6 +390,7 @@ impl QRCode {
     ///
     /// * `img`: A mutable reference to the `RgbaImage` of the QR code.
     /// * `watermark`: A reference to the watermark `RgbaImage`.
+    #[cfg(feature = "raster")]
     pub fn add_image_watermark(img: &mut RgbaImage, watermark: &RgbaImage) {
         let (width, height) = img.dimensions();
         let (watermark_width, watermark_height) = watermark.dimensions();
@@ -431,7 +483,8 @@ impl QRCode {
     /// # Returns
     ///
     /// A `Result` which is either a combined `QRCode` instance or an error string.
-    pub fn combine_qr_codes(codes: Vec<QRCode>) -> Result<Self, &'static str> {
+    #[cfg(feature = "raster")]
+    pub fn combine_qr_codes(codes: Vec<QRCode>) -> core::result::Result<Self, &'static str> {
         // Implementation to merge multiple QR codes into one, suitable for complex data sets.
 
         // Check if there are any QR codes to combine.
@@ -439,58 +492,50 @@ impl QRCode {
             return Err("No QR codes to combine");
         }
 
-        // Calculate the total width and height needed for the combined QR code.
-        let total_width = codes
+        // Quiet zone applied around each individual code in the strip.
+        const QUIET_ZONE: u32 = 4;
+
+        // Encode every code up front so capacity errors surface here rather
+        // than panicking mid-render.
+        let encoded: Vec<QrCode> = codes
             .iter()
-            .map(|code| code.to_qrcode().width() as u32)
-            .sum();
+            .map(|code| code.try_to_qrcode())
+            .collect::<core::result::Result<_, _>>()
+            .map_err(|_| "one of the QR codes could not be encoded")?;
 
-        // Create a new QRCode instance with a placeholder empty data.
-        let mut combined_qrcode = QRCode::from_bytes(Vec::new());
+        // The strip is one module per pixel: total width is the sum of each
+        // code's quiet-zoned width, height is the tallest quiet-zoned code.
+        let slot_widths: Vec<u32> = encoded
+            .iter()
+            .map(|qr| qr.width() as u32 + 2 * QUIET_ZONE)
+            .collect();
+        let total_width: u32 = slot_widths.iter().sum();
+        let total_height: u32 = slot_widths.iter().copied().max().unwrap_or(0);
 
-        // Set the width and height of the combined QR code.
-        combined_qrcode.resize(total_width, total_width);
+        // White canvas so the quiet zones are correct everywhere.
+        let mut combined_image: RgbaImage =
+            ImageBuffer::from_pixel(total_width, total_height, Rgba([255, 255, 255, 255]));
 
-        // Create an image buffer to hold the combined QR code.
-        let mut combined_image = combined_qrcode.to_png(total_width);
-
-        // Initialize the x-coordinate for drawing the QR codes.
+        // Draw each code into its slot, offset by the quiet zone.
         let mut x_offset = 0;
-
-        // Iterate through the QR codes and draw them onto the combined image.
-        for code in codes {
-            let qrcode = code.to_qrcode();
-            let width = qrcode.width() as u32;
-            let height = qrcode.width() as u32;
-
-            // Copy each QR code's pixels to the combined image at the appropriate x-coordinate.
-            for x in 0..width {
-                for y in 0..height {
-                    let pixel = qrcode[(x as usize, y as usize)];
-                    let combined_x = x + x_offset;
-                    let combined_y = y;
-
-                    // Set the pixel color on the combined image.
-                    match pixel {
-                        qrcode::Color::Dark => {
-                            combined_image.put_pixel(combined_x, combined_y, Rgba([0, 0, 0, 0]));
-                        }
-                        qrcode::Color::Light => {
-                            combined_image.put_pixel(
-                                combined_x,
-                                combined_y,
-                                Rgba([255, 255, 255, 255]),
-                            );
-                        }
+        for (qr, slot_width) in encoded.iter().zip(&slot_widths) {
+            let modules = qr.width() as u32;
+            for my in 0..modules {
+                for mx in 0..modules {
+                    if qr[(mx as usize, my as usize)] == qrcode::Color::Dark {
+                        let px = x_offset + QUIET_ZONE + mx;
+                        let py = QUIET_ZONE + my;
+                        combined_image.put_pixel(px, py, Rgba([0, 0, 0, 255]));
                     }
                 }
             }
-
-            // Update the x-coordinate for the next QR code.
-            x_offset += width;
+            x_offset += slot_width;
         }
 
-        // Update the data of the combined QR code with the image buffer.
+        // Note: the result is a composite *image* (raw RGBA bytes stored in
+        // `data`), not a single scannable QR symbol. See ROADMAP.md — this
+        // helper is slated for replacement by Structured Append.
+        let mut combined_qrcode = QRCode::from_bytes(Vec::new());
         combined_qrcode.data = combined_image.into_raw();
 
         Ok(combined_qrcode)
@@ -505,6 +550,7 @@ impl QRCode {
     /// # Returns
     ///
     /// A `Vec<u8>` containing the compressed data.
+    #[cfg(feature = "legacy-compress")]
     pub fn compress_data(data: &str) -> Vec<u8> {
         // Implementation for data compression to reduce the size of data before QR code generation.
 
@@ -568,6 +614,7 @@ impl QRCode {
     /// # Returns
     ///
     /// A combined `RgbaImage` with the overlay applied.
+    #[cfg(feature = "raster")]
     pub fn overlay_image(&self, overlay: &RgbaImage) -> RgbaImage {
         // Create a QR code image.
         let qrcode = self.to_qrcode();
@@ -584,10 +631,10 @@ impl QRCode {
 
                 // Set the pixel color on the combined image.
                 match pixel {
-                    Color::Dark => {
-                        combined_image.put_pixel(combined_x, combined_y, Rgba([0, 0, 0, 0]));
+                    qrcode::Color::Dark => {
+                        combined_image.put_pixel(combined_x, combined_y, Rgba([0, 0, 0, 255]));
                     }
-                    Color::Light => {
+                    qrcode::Color::Light => {
                         combined_image.put_pixel(
                             combined_x,
                             combined_y,
@@ -621,7 +668,7 @@ impl QRCode {
     /// # Returns
     ///
     /// A `Result` which is either a new `QRCode` instance with updated encoding or an error string.
-    pub fn set_encoding_format(&self, format: &str) -> Result<Self, &'static str> {
+    pub fn set_encoding_format(&self, format: &str) -> core::result::Result<Self, &'static str> {
         if format != "utf-8" {
             return Err("Unsupported encoding format");
         }
@@ -640,5 +687,94 @@ impl QRCode {
     /// A string slice representing the encoding format.
     pub fn get_encoding_format(&self) -> &str {
         &self.encoding_format
+    }
+}
+
+/// Layered API built on the [`encode`] and [`render`] modules.
+///
+/// These methods return [`Result`] instead of panicking and expose the
+/// error-correction, version, quiet-zone, styling and real byte-encoder
+/// capabilities of the new architecture.
+impl QRCode {
+    /// Encodes the data into a renderer-ready [`Matrix`] using the default
+    /// [`QrcodeEngine`] and the supplied [`QrOptions`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded at the requested
+    /// settings (for example, it exceeds capacity).
+    pub fn encode(&self, options: &QrOptions) -> Result<Matrix> {
+        encode::encode(&self.data, options)
+    }
+
+    /// Renders a styled SVG string using the new SVG-first renderer.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded.
+    pub fn to_svg_styled(
+        &self,
+        options: &QrOptions,
+        svg_options: &render::svg::SvgOptions,
+    ) -> Result<String> {
+        let matrix = self.encode(options)?;
+        Ok(render::svg::render(&matrix, svg_options))
+    }
+
+    /// Renders the QR code to a string of Unicode half-block characters,
+    /// suitable for printing directly to a terminal.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded.
+    #[cfg(feature = "unicode")]
+    pub fn to_unicode(&self, options: &QrOptions) -> Result<String> {
+        let matrix = self.encode(options)?;
+        Ok(render::unicode::render(&matrix))
+    }
+
+    /// Encodes the QR code as PNG bytes, ready to write to a file or response.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if encoding or rendering fails.
+    #[cfg(feature = "raster")]
+    pub fn to_png_bytes(
+        &self,
+        options: &QrOptions,
+        raster_options: &render::raster::RasterOptions,
+    ) -> Result<Vec<u8>> {
+        let matrix = self.encode(options)?;
+        render::raster::to_png_bytes(&matrix, raster_options)
+    }
+
+    /// Encodes the QR code as JPEG bytes (alpha is flattened to the background).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if encoding or rendering fails.
+    #[cfg(feature = "raster")]
+    pub fn to_jpeg_bytes(
+        &self,
+        options: &QrOptions,
+        raster_options: &render::raster::RasterOptions,
+    ) -> Result<Vec<u8>> {
+        let matrix = self.encode(options)?;
+        render::raster::to_jpeg_bytes(&matrix, raster_options)
+    }
+
+    /// Encodes the QR code as GIF bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if encoding or rendering fails.
+    #[cfg(feature = "raster")]
+    pub fn to_gif_bytes(
+        &self,
+        options: &QrOptions,
+        raster_options: &render::raster::RasterOptions,
+    ) -> Result<Vec<u8>> {
+        let matrix = self.encode(options)?;
+        render::raster::to_gif_bytes(&matrix, raster_options)
     }
 }
