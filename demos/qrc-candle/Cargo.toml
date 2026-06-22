@@ -1,0 +1,23 @@
+# Standalone demo crate — its own `[workspace]` so it is fully detached from
+# the `qrc` package's build, CI and coverage. Build it explicitly:
+#   cd demos/qrc-candle && cargo run --release -- --help
+[workspace]
+
+[package]
+name = "qrc-candle"
+version = "0.1.0"
+edition = "2021"
+description = "Local AI art-QR demo: qrc control image + candle Stable Diffusion (img2img)"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+qrc = { path = "../..", default-features = false, features = ["std", "raster"] }
+candle-core = "0.8"
+candle-nn = "0.8"
+candle-transformers = "0.8"
+tokenizers = "0.20"
+hf-hub = "0.3"
+image = "0.25"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }

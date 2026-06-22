@@ -85,8 +85,11 @@ The work is split to keep the core tight and the heavy lifting modular:
   HTTP is behind an injectable `HttpClient` (real `UreqClient`, mockable for
   tests). 100% coverage incl. a localhost-server test of the real client; the
   `ai_art` example runs against Replicate with a token.
-- **Demo (planned):** a PoC CLI piping the control image into `candle` for local
-  Stable-Diffusion + QR-ControlNet inference — marketing/docs (Option 4).
+- **Demo — landed:** `demos/qrc-candle`, a standalone CLI (its own `[workspace]`,
+  detached from the core's build/CI/coverage) piping the control image into
+  `candle` Stable-Diffusion **img2img** for fully-local generation (Option 4).
+  Compile-verified against candle 0.8; weights download at run time. True
+  ControlNet conditioning is noted as the next step.
 
 **Deferred with reason:**
 - *Full `no_std`*: blocked on the `qrcode`/`image` backends requiring `std`.
