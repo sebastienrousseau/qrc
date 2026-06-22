@@ -79,6 +79,8 @@ pub fn render(matrix: &Matrix, opts: &RasterOptions) -> RgbaImage {
     img
 }
 
+/// Encodes an RGBA image to `format` bytes, flattening alpha for JPEG and
+/// mapping any image-library failure to [`QrError::Render`].
 fn encode(img: &RgbaImage, format: ImageFormat) -> Result<Vec<u8>> {
     let mut buf = Vec::new();
     let dynimg = DynamicImage::ImageRgba8(img.clone());
@@ -94,12 +96,26 @@ fn encode(img: &RgbaImage, format: ImageFormat) -> Result<Vec<u8>> {
     Ok(buf)
 }
 
+/// Renders `matrix` and encodes it as bytes in an arbitrary [`ImageFormat`]
+/// supported by the `image` crate (e.g. PNG, JPEG, GIF, BMP, TIFF, WebP).
+///
+/// The dedicated [`to_png_bytes`]/[`to_jpeg_bytes`]/[`to_gif_bytes`] helpers
+/// cover the common cases; use this when you need another format.
+///
+/// # Errors
+///
+/// Returns [`QrError::Render`] if the requested format has no encoder or
+/// encoding otherwise fails.
+pub fn to_bytes(matrix: &Matrix, opts: &RasterOptions, format: ImageFormat) -> Result<Vec<u8>> {
+    encode(&render(matrix, opts), format)
+}
+
 /// Encodes `matrix` as PNG bytes.
 ///
 /// # Errors
 /// Returns [`QrError::Render`] if encoding fails.
 pub fn to_png_bytes(matrix: &Matrix, opts: &RasterOptions) -> Result<Vec<u8>> {
-    encode(&render(matrix, opts), ImageFormat::Png)
+    to_bytes(matrix, opts, ImageFormat::Png)
 }
 
 /// Encodes `matrix` as JPEG bytes (alpha is flattened).
@@ -107,7 +123,7 @@ pub fn to_png_bytes(matrix: &Matrix, opts: &RasterOptions) -> Result<Vec<u8>> {
 /// # Errors
 /// Returns [`QrError::Render`] if encoding fails.
 pub fn to_jpeg_bytes(matrix: &Matrix, opts: &RasterOptions) -> Result<Vec<u8>> {
-    encode(&render(matrix, opts), ImageFormat::Jpeg)
+    to_bytes(matrix, opts, ImageFormat::Jpeg)
 }
 
 /// Encodes `matrix` as GIF bytes.
@@ -115,5 +131,5 @@ pub fn to_jpeg_bytes(matrix: &Matrix, opts: &RasterOptions) -> Result<Vec<u8>> {
 /// # Errors
 /// Returns [`QrError::Render`] if encoding fails.
 pub fn to_gif_bytes(matrix: &Matrix, opts: &RasterOptions) -> Result<Vec<u8>> {
-    encode(&render(matrix, opts), ImageFormat::Gif)
+    to_bytes(matrix, opts, ImageFormat::Gif)
 }

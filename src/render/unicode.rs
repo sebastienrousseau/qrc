@@ -9,10 +9,14 @@
 
 use crate::matrix::Matrix;
 
-const FULL: char = '\u{2588}'; // █ both halves dark
-const UPPER: char = '\u{2580}'; // ▀ top dark
-const LOWER: char = '\u{2584}'; // ▄ bottom dark
-const BLANK: char = ' '; // both light
+/// `█` — both the top and bottom module of the pair are dark.
+const FULL: char = '\u{2588}';
+/// `▀` — only the top module of the pair is dark.
+const UPPER: char = '\u{2580}';
+/// `▄` — only the bottom module of the pair is dark.
+const LOWER: char = '\u{2584}';
+/// Space — both modules of the pair are light.
+const BLANK: char = ' ';
 
 /// Renders `matrix` to a string of half-block characters (dark on light).
 #[must_use]

@@ -92,14 +92,10 @@
 
 extern crate qrcode;
 
-#[cfg(feature = "legacy-compress")]
-use flate2::{write::ZlibEncoder, Compression};
 #[cfg(feature = "raster")]
 use image::{ImageBuffer, Rgba, RgbaImage};
 use qrcode::{render::svg, QrCode};
 use std::collections::HashMap;
-#[cfg(feature = "legacy-compress")]
-use std::io::Write;
 
 /// The `macros` module contains functions for generating macros.
 pub mod macros;
@@ -453,24 +449,11 @@ impl QRCode {
     ///
     /// A `QRCode` instance representing a dynamic QR code.
     pub fn create_dynamic(initial_data: &str) -> Self {
-        // Implementation for creating a QR code whose content can be updated post-creation.
-
-        // You can choose a specific format or protocol for dynamic QR codes, such as URL encoding.
-        let dynamic_data_format = "url"; // Replace with your chosen format.
-
-        // Create a dynamic QR code URL based on the initial data and format.
-        let dynamic_url = match dynamic_data_format {
-            "url" => {
-                format!(
-                    "https://your-api-endpoint.com/update?qrcode={}",
-                    initial_data
-                )
-            }
-            // Add more format cases as needed.
-            _ => return QRCode::from_string(initial_data.to_string()), // Default to the initial data.
-        };
-
-        // Create a QRCode instance with the dynamic URL.
+        // A dynamic QR code encodes a stable redirect URL whose target can be
+        // changed server-side after the code is printed. Here we wrap the
+        // initial data in a redirect endpoint; swap the base URL for your own
+        // managed redirector.
+        let dynamic_url = format!("https://your-api-endpoint.com/update?qrcode={initial_data}");
         QRCode::from_string(dynamic_url)
     }
 
@@ -510,7 +493,9 @@ impl QRCode {
             .map(|qr| qr.width() as u32 + 2 * QUIET_ZONE)
             .collect();
         let total_width: u32 = slot_widths.iter().sum();
-        let total_height: u32 = slot_widths.iter().copied().max().unwrap_or(0);
+        // `fold` visits every (guaranteed non-empty) slot, so there is no
+        // unreachable default branch as there would be with `max().unwrap_or`.
+        let total_height: u32 = slot_widths.iter().copied().fold(0, u32::max);
 
         // White canvas so the quiet zones are correct everywhere.
         let mut combined_image: RgbaImage =
@@ -539,43 +524,6 @@ impl QRCode {
         combined_qrcode.data = combined_image.into_raw();
 
         Ok(combined_qrcode)
-    }
-
-    /// Compresses the provided data string using Zlib compression.
-    ///
-    /// # Parameters
-    ///
-    /// * `data`: A string slice representing the data to compress.
-    ///
-    /// # Returns
-    ///
-    /// A `Vec<u8>` containing the compressed data.
-    #[cfg(feature = "legacy-compress")]
-    pub fn compress_data(data: &str) -> Vec<u8> {
-        // Implementation for data compression to reduce the size of data before QR code generation.
-
-        // Encode the input data into bytes.
-        let input_bytes = data.as_bytes();
-
-        // Create a buffer to store the compressed data.
-        let mut compressed_data = Vec::new();
-
-        // Initialize a Zlib encoder with compression settings.
-        let mut encoder = ZlibEncoder::new(&mut compressed_data, Compression::default());
-
-        // Compress the input data and check for errors.
-        if encoder.write_all(input_bytes).is_err() {
-            // Compression failed, return the original data.
-            return input_bytes.to_vec();
-        }
-
-        // Finish the compression process and retrieve the compressed data.
-        if encoder.finish().is_err() {
-            // Compression failed, return the original data.
-            return input_bytes.to_vec();
-        }
-
-        compressed_data
     }
 
     /// Generates a batch of QR codes from a vector of data strings.
@@ -776,5 +724,23 @@ impl QRCode {
     ) -> Result<Vec<u8>> {
         let matrix = self.encode(options)?;
         render::raster::to_gif_bytes(&matrix, raster_options)
+    }
+
+    /// Encodes the QR code as bytes in an arbitrary [`image::ImageFormat`]
+    /// (e.g. BMP, TIFF or WebP in addition to PNG/JPEG/GIF).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded, or if the requested
+    /// image format has no encoder.
+    #[cfg(feature = "raster")]
+    pub fn to_image_bytes(
+        &self,
+        options: &QrOptions,
+        raster_options: &render::raster::RasterOptions,
+        format: image::ImageFormat,
+    ) -> Result<Vec<u8>> {
+        let matrix = self.encode(options)?;
+        render::raster::to_bytes(&matrix, raster_options, format)
     }
 }

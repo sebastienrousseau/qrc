@@ -11,7 +11,9 @@
 /// quiet zone that every renderer must honour.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Matrix {
+    /// Number of modules along one side, excluding the quiet zone.
     size: usize,
+    /// Quiet-zone width in modules, applied on every side.
     quiet_zone: usize,
     /// Row-major, `size * size` entries. `true` is a dark module.
     modules: Vec<bool>,

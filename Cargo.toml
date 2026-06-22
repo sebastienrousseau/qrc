@@ -33,7 +33,6 @@ members = ["xtask"]
 all-features = true
 
 [dependencies]
-flate2 = { version = "1.0.35", optional = true }
 image = { version = "0.25.5", optional = true }
 
 [dependencies.qrcode]
@@ -57,8 +56,6 @@ std = []
 raster = ["dep:image", "std"]
 svg = []
 unicode = []
-# Legacy helpers retained for backwards compatibility; see ROADMAP.md.
-legacy-compress = ["dep:flate2", "std"]
 
 [lib]
 path = "src/lib.rs"

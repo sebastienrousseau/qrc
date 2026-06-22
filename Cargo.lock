@@ -1121,7 +1121,6 @@ name = "qrc"
 version = "0.0.6"
 dependencies = [
  "criterion",
- "flate2",
  "image",
  "qrcode",
  "rqrr",

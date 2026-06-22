@@ -40,9 +40,24 @@ panic-free `combine_qr_codes`; fixed example; metadata cleanup; an independent
 - Feature flags: `default = [std, raster, svg, unicode]`; `image`/`flate2` are
   optional — the **core (encode + SVG + unicode) compiles with no `image`
   dependency**, confirmed by `--no-default-features --features svg,unicode`.
-- 13 new integration tests (incl. PNG/JPEG/GIF round-trip decode), styled-SVG
-  and unicode tests, ECC/version option tests; new criterion benches for the
+- Integration tests (incl. PNG/JPEG/GIF round-trip decode), styled-SVG and
+  unicode tests, ECC/version option tests; new criterion benches for the
   layered API. Clippy clean on all-features/all-targets; `cargo fmt` clean.
+
+**Quality gates — met.**
+- **100% test coverage** (`cargo llvm-cov --all-features`): regions, functions
+  and lines all 100% across every source file. Unreachable defensive branches
+  were either refactored away (`create_dynamic` dead arm, `combine`'s
+  `unwrap_or`) or made reachable through public API (`to_image_bytes` + a
+  no-encoder format triggers the image-error path); `compress_data` and its
+  macro were removed (irreducibly-uncoverable `Vec` I/O branches + flagged
+  stub), dropping the `flate2` dependency.
+- **100% documentation**: public items enforced by `deny(missing_docs)`;
+  private items verified clean via `clippy::missing_docs_in_private_items`;
+  `cargo doc` builds with `-D warnings` and intra-doc-link checks.
+- **Examples for every feature**: `encode_options`, `svg_styling`,
+  `raster_formats`, `terminal`, `legacy_and_macros` — each runs and exercises
+  the full public surface incl. all macros and the free renderer functions.
 
 **Deferred with reason:**
 - *Full `no_std`*: blocked on the `qrcode`/`image` backends requiring `std`.

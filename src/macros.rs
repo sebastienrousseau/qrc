@@ -192,30 +192,6 @@ macro_rules! batch_generate_qr {
 }
 
 #[macro_export]
-/// Compresses data before encoding it into a QR code.
-///
-/// This is beneficial for encoding large amounts of data into a QR code
-/// by reducing the size of the data.
-///
-/// # Parameters
-/// - `$data:expr`: The data to be compressed and encoded.
-///
-/// # Example
-/// ```
-/// # #[cfg(feature = "legacy-compress")] {
-/// use qrc::QRCode; // Import QRCode type
-/// use qrc::compress_data_macro; // Corrected import to use the macro
-/// let compressed_data = compress_data_macro!("Some large string of data"); // Correct usage
-/// # }
-/// ```
-#[cfg(feature = "legacy-compress")]
-macro_rules! compress_data_macro {
-    ($data:expr) => {
-        QRCode::compress_data($data)
-    };
-}
-
-#[macro_export]
 /// Combines multiple QR codes into a single QR code.
 ///
 /// This macro is useful for scenarios where multiple QR codes need to be combined,

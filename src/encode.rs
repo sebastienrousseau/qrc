@@ -28,6 +28,7 @@ pub enum Ecc {
 }
 
 impl Ecc {
+    /// Maps to the backend `qrcode` error-correction level.
     fn to_qrcode(self) -> EcLevel {
         match self {
             Ecc::Low => EcLevel::L,
