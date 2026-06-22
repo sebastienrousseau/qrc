@@ -63,7 +63,7 @@
 //! | ControlNet control-image export (AI art-QR) | supported (`raster`) |
 //! | Business-card vCard payload | supported (`payload`) |
 //! | Arbitrary image formats (BMP/TIFF/WebP/…) | supported (`raster`) |
-//! | AI art-QR via cloud provider | planned (`api` feature) |
+//! | AI art-QR via cloud provider (Replicate) | supported (`api` feature) |
 //! | Styling (gradients, eye shapes) | planned (Phase 2) |
 //! | Structured payloads (WiFi/EMVCo/EPC) | planned (Phase 2) |
 //! | CLI / WASM / Python bindings | planned (Phase 3) |
@@ -105,6 +105,8 @@ use std::collections::HashMap;
 /// The `macros` module contains functions for generating macros.
 pub mod macros;
 
+#[cfg(feature = "api")]
+pub mod api;
 pub mod encode;
 pub mod error;
 pub mod matrix;
@@ -862,5 +864,24 @@ impl QRCode {
     ) -> Result<Vec<u8>> {
         let img = self.to_art_image(options, background, blend_options)?;
         render::raster::image_to_bytes(&img, format)
+    }
+
+    /// Generates an AI art-QR through a cloud [`Provider`](api::Provider),
+    /// returning the first generated image that actually scans.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`QrError`] if the data cannot be encoded, or [`QrError::Api`]
+    /// if no scannable result was produced within the retry budget.
+    #[cfg(feature = "api")]
+    pub fn to_ai_art<P: api::Provider>(
+        &self,
+        options: &QrOptions,
+        control_options: &render::control::ControlOptions,
+        provider: &P,
+        request: &api::ArtRequest,
+        retry: &api::RetryOptions,
+    ) -> Result<Vec<u8>> {
+        api::generate(self, options, control_options, provider, request, retry)
     }
 }

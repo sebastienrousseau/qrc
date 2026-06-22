@@ -25,6 +25,9 @@ pub enum QrError {
     Encode(&'static str),
     /// Rendering to the requested image format failed.
     Render(&'static str),
+    /// A cloud art-QR provider call failed (network, auth, or the generated
+    /// image never scanned). Only produced with the `api` feature.
+    Api(String),
 }
 
 impl fmt::Display for QrError {
@@ -36,6 +39,7 @@ impl fmt::Display for QrError {
             }
             QrError::Encode(msg) => write!(f, "QR encoding failed: {msg}"),
             QrError::Render(msg) => write!(f, "QR rendering failed: {msg}"),
+            QrError::Api(msg) => write!(f, "art-QR provider error: {msg}"),
         }
     }
 }

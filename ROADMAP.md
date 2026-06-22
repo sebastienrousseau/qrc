@@ -78,10 +78,13 @@ The work is split to keep the core tight and the heavy lifting modular:
   - `render::art` + `QRCode::to_art_image{,_bytes}` — **offline artistic blend**
     weaving a supplied image into the code (dot + solid-finder enforcement),
     deterministic and rqrr-verified scannable (Option 3). `art_qr` example.
-- **`feature = "api"` add-on (planned):** takes the control image + a prompt and
-  calls a cloud generator (Replicate/Stability/HF) behind an injectable
-  `Provider` trait (real HTTP via a light client; mockable for tests), verifies
-  the result still scans and retries (Option 1).
+- **`feature = "api"` add-on — landed:** `api::generate` / `QRCode::to_ai_art`
+  take the control image + a prompt and call a cloud generator behind the
+  injectable `api::Provider` trait, verify the result still scans, and retry
+  (Option 1). `api::replicate::ReplicateProvider` is the included back end; its
+  HTTP is behind an injectable `HttpClient` (real `UreqClient`, mockable for
+  tests). 100% coverage incl. a localhost-server test of the real client; the
+  `ai_art` example runs against Replicate with a token.
 - **Demo (planned):** a PoC CLI piping the control image into `candle` for local
   Stable-Diffusion + QR-ControlNet inference — marketing/docs (Option 4).
 

@@ -34,6 +34,11 @@ all-features = true
 
 [dependencies]
 image = { version = "0.25.5", optional = true }
+# `api` feature only — cloud art-QR generation.
+base64 = { version = "0.22", optional = true }
+rqrr = { version = "0.10.1", optional = true }
+serde_json = { version = "1", optional = true }
+ureq = { version = "2.10", optional = true }
 
 [dependencies.qrcode]
 default-features = false
@@ -58,6 +63,9 @@ svg = []
 unicode = []
 # Structured payload builders (vCard business cards, …): pure string, no deps.
 payload = []
+# Cloud AI art-QR generation (Replicate, …). Pulls an HTTP/TLS client + JSON +
+# a decoder for scannability verification; opt-in to keep the core tight.
+api = ["dep:ureq", "dep:serde_json", "dep:base64", "dep:rqrr", "raster"]
 
 [lib]
 path = "src/lib.rs"
@@ -65,6 +73,11 @@ name = "qrc"
 proc-macro = false
 crate-type = ["lib"]
 required-features = []
+
+[[example]]
+name = "ai_art"
+path = "examples/ai_art.rs"
+required-features = ["api"]
 
 [[bench]]
 path = "benches/qrc.rs"
