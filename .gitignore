@@ -8,3 +8,7 @@ build
 Icon?
 src/.DS_Store
 tarpaulin-report.html
+
+# branded_card example outputs
+/branded_card.svg
+/branded_card.png
