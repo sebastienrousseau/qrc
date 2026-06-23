@@ -7,9 +7,16 @@
 name = "qrc-candle"
 version = "0.1.0"
 edition = "2021"
-description = "Local AI art-QR demo: qrc control image + candle Stable Diffusion (img2img)"
+description = "Local AI art-QR demo: qrc control image + candle Stable Diffusion + ControlNet"
 license = "MIT OR Apache-2.0"
 publish = false
+
+[features]
+# `metal` (Apple GPU) is on by default; on Linux/Windows use
+# `--no-default-features --features cuda`, or `--no-default-features` for CPU.
+default = ["metal"]
+metal = ["candle-core/metal", "candle-nn/metal", "candle-transformers/metal"]
+cuda = ["candle-core/cuda", "candle-nn/cuda", "candle-transformers/cuda"]
 
 [dependencies]
 qrc = { path = "../..", default-features = false, features = ["std", "raster"] }

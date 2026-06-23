@@ -37,9 +37,13 @@ use qrc::QRCode;
 #[derive(Parser, Debug)]
 #[command(version, about)]
 struct Args {
-    /// Data to encode in the QR code (URL, text, …).
+    /// Data to encode in the QR code (URL, text, …). Use this or --data-file.
     #[arg(long)]
-    data: String,
+    data: Option<String>,
+
+    /// Read the payload from a file (e.g. a vCard whose CRLFs must survive).
+    #[arg(long)]
+    data_file: Option<PathBuf>,
 
     /// Text prompt describing the desired artwork.
     #[arg(long)]
@@ -54,7 +58,7 @@ struct Args {
     output: PathBuf,
 
     /// Number of denoising steps.
-    #[arg(long, default_value_t = 30)]
+    #[arg(long, default_value_t = 20)]
     steps: usize,
 
     /// ControlNet conditioning scale: higher constrains the art more tightly to
@@ -67,7 +71,7 @@ struct Args {
     guidance_scale: f64,
 
     /// Square size of the control image / generated art in pixels.
-    #[arg(long, default_value_t = 768)]
+    #[arg(long, default_value_t = 512)]
     size: usize,
 
     /// Hugging Face repo of the SD1.5 QR ControlNet.
@@ -85,6 +89,17 @@ struct Args {
     /// Force CPU even if a GPU is available (very slow).
     #[arg(long)]
     cpu: bool,
+
+    /// Use full float32 precision (larger download, more memory, slower). The
+    /// default is float16, which is recommended on the GPU.
+    #[arg(long)]
+    fp32: bool,
+
+    /// Load weights from a local directory instead of the Hugging Face Hub.
+    /// Expects `tokenizer.json`, `text_encoder.safetensors`, `vae.safetensors`,
+    /// `unet.safetensors`, `controlnet.safetensors`.
+    #[arg(long)]
+    local_weights: Option<PathBuf>,
 }
 
 /// Stable-Diffusion v1.5 weight locations on the Hugging Face Hub.
@@ -94,6 +109,22 @@ mod hub {
     pub const VAE: &str = "vae/diffusion_pytorch_model.safetensors";
     pub const UNET: &str = "unet/diffusion_pytorch_model.safetensors";
     pub const CLIP: &str = "text_encoder/model.safetensors";
+    pub const VAE_F16: &str = "vae/diffusion_pytorch_model.fp16.safetensors";
+    pub const UNET_F16: &str = "unet/diffusion_pytorch_model.fp16.safetensors";
+    pub const CLIP_F16: &str = "text_encoder/model.fp16.safetensors";
+}
+
+/// Selects the compute device: the Apple GPU (Metal) if available, else CUDA,
+/// else CPU.
+fn select_device(cpu: bool) -> Result<Device> {
+    if cpu {
+        return Ok(Device::Cpu);
+    }
+    #[cfg(feature = "metal")]
+    if let Ok(metal) = Device::new_metal(0) {
+        return Ok(metal);
+    }
+    Ok(Device::cuda_if_available(0).unwrap_or(Device::Cpu))
 }
 
 /// The SD1.5 UNet config (also used to lay out the matching ControlNet).
@@ -130,10 +161,19 @@ fn hf_file(repo: &str, filename: &str) -> Result<PathBuf> {
     Ok(api.model(repo.to_string()).get(filename)?)
 }
 
+/// Resolves a weight file: from the local directory if `--local-weights` was
+/// given (using `local_name`), otherwise from the Hugging Face Hub.
+fn resolve(args: &Args, local_name: &str, repo: &str, filename: &str) -> Result<PathBuf> {
+    match &args.local_weights {
+        Some(dir) => Ok(dir.join(local_name)),
+        None => hf_file(repo, filename),
+    }
+}
+
 /// Loads the qrc control image as a `[0, 1]` tensor of shape `(2, 3, size, size)`
 /// (duplicated for classifier-free guidance), as ControlNet expects.
-fn control_cond_tensor(args: &Args, device: &Device) -> Result<Tensor> {
-    let qr = QRCode::from_string(args.data.clone());
+fn control_cond_tensor(payload: &str, args: &Args, device: &Device, dtype: DType) -> Result<Tensor> {
+    let qr = QRCode::from_string(payload.to_string());
     let rgba = qr
         .to_control_image(
             &QrOptions::new().ecc(Ecc::High),
@@ -150,14 +190,20 @@ fn control_cond_tensor(args: &Args, device: &Device) -> Result<Tensor> {
     let (w, h) = rgb.dimensions();
     let t = Tensor::from_vec(rgb.into_raw(), (h as usize, w as usize, 3), device)?
         .permute((2, 0, 1))?
-        .to_dtype(DType::F32)?;
+        .to_dtype(dtype)?;
     let t = (t / 255.0)?.unsqueeze(0)?;
     Ok(Tensor::cat(&[&t, &t], 0)?)
 }
 
 /// Builds the conditional+unconditional text embeddings for guidance.
-fn text_embeddings(args: &Args, config: &StableDiffusionConfig, device: &Device) -> Result<Tensor> {
-    let tokenizer_path = hf_file(hub::CLIP_TOKENIZER_REPO, "tokenizer.json")?;
+fn text_embeddings(
+    args: &Args,
+    config: &StableDiffusionConfig,
+    device: &Device,
+    dtype: DType,
+    clip_file: &str,
+) -> Result<Tensor> {
+    let tokenizer_path = resolve(args, "tokenizer.json", hub::CLIP_TOKENIZER_REPO, "tokenizer.json")?;
     let tokenizer =
         Tokenizer::from_file(tokenizer_path).map_err(|e| anyhow::anyhow!("tokenizer: {e}"))?;
     let vocab = tokenizer.get_vocab(true);
@@ -178,9 +224,9 @@ fn text_embeddings(args: &Args, config: &StableDiffusionConfig, device: &Device)
         Ok(tokens)
     };
 
-    let clip_weights = hf_file(hub::SD15_REPO, hub::CLIP)?;
+    let clip_weights = resolve(args, "text_encoder.safetensors", hub::SD15_REPO, clip_file)?;
     let text_model =
-        stable_diffusion::build_clip_transformer(&config.clip, clip_weights, device, DType::F32)?;
+        stable_diffusion::build_clip_transformer(&config.clip, clip_weights, device, dtype)?;
 
     let cond = Tensor::new(encode(&args.prompt)?, device)?.unsqueeze(0)?;
     let uncond = Tensor::new(encode(&args.negative_prompt)?, device)?.unsqueeze(0)?;
@@ -191,36 +237,52 @@ fn text_embeddings(args: &Args, config: &StableDiffusionConfig, device: &Device)
 }
 
 fn run(args: &Args) -> Result<()> {
-    let device = if args.cpu {
-        Device::Cpu
-    } else {
-        Device::cuda_if_available(0).unwrap_or(Device::Cpu)
+    let payload = match (&args.data, &args.data_file) {
+        (Some(d), _) => d.clone(),
+        (None, Some(f)) => std::fs::read_to_string(f).context("reading --data-file")?,
+        (None, None) => anyhow::bail!("provide --data or --data-file"),
     };
+    let device = select_device(args.cpu)?;
     println!("device: {device:?}");
 
+    // float16 by default — smaller weights, faster, fits a GPU; opt out with --fp32.
+    let (dtype, vae_file, unet_file, clip_file) = if args.fp32 {
+        (DType::F32, hub::VAE, hub::UNET, hub::CLIP)
+    } else {
+        (DType::F16, hub::VAE_F16, hub::UNET_F16, hub::CLIP_F16)
+    };
+    println!("precision: {dtype:?}");
+
     let config = StableDiffusionConfig::v1_5(None, Some(args.size), Some(args.size));
-    let text_embeddings = text_embeddings(args, &config, &device)?;
+    let text_embeddings = text_embeddings(args, &config, &device, dtype, clip_file)?;
 
     // VAE (decode) + UNet + ControlNet.
-    let vae = config.build_vae(hf_file(hub::SD15_REPO, hub::VAE)?, &device, DType::F32)?;
+    println!("loading VAE / UNet / ControlNet…");
+    let vae = config.build_vae(resolve(args, "vae.safetensors", hub::SD15_REPO, vae_file)?, &device, dtype)?;
     let unet = config.build_unet(
-        hf_file(hub::SD15_REPO, hub::UNET)?,
+        resolve(args, "unet.safetensors", hub::SD15_REPO, unet_file)?,
         &device,
         4,
         false,
-        DType::F32,
+        dtype,
     )?;
-    let cn_weights = hf_file(&args.controlnet_repo, &args.controlnet_file)?;
-    let cn_vs = unsafe { VarBuilder::from_mmaped_safetensors(&[cn_weights], DType::F32, &device)? };
+    let cn_weights = resolve(
+        args,
+        "controlnet.safetensors",
+        &args.controlnet_repo,
+        &args.controlnet_file,
+    )?;
+    let cn_vs = unsafe { VarBuilder::from_mmaped_safetensors(&[cn_weights], dtype, &device)? };
     let controlnet = ControlNet::new(cn_vs, 4, false, &v15_unet_config())?;
 
-    let control_cond = control_cond_tensor(args, &device)?;
+    let control_cond = control_cond_tensor(&payload, args, &device, dtype)?;
 
     // Start from pure noise (text2img), conditioned by ControlNet every step.
     let mut scheduler = config.build_scheduler(args.steps)?;
     let latent = args.size / 8;
     device.set_seed(args.seed)?;
     let mut latents = (Tensor::randn(0f32, 1f32, (1, 4, latent, latent), &device)?
+        .to_dtype(dtype)?
         * scheduler.init_noise_sigma())?;
 
     for &timestep in scheduler.timesteps().to_vec().iter() {
