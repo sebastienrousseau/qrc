@@ -37,7 +37,7 @@ const FULL_NAME: &str = "Sebastien Rousseau"; // your preferred professional nam
 const FIRST: &str = "Sebastien";
 const LAST: &str = "Rousseau";
 const JOB_TITLE: &str = "Founder & Software Engineer"; // a clear, specific title
-const COMPANY: &str = "Sebastien Rousseau"; // your brand / company name
+const COMPANY: &str = ""; // your brand / company name; "" to skip
 
 // — Contact (keep to one each to avoid clutter) —
 const MOBILE: &str = ""; // one primary number, e.g. "+44 20 7946 0000"; "" to skip
@@ -45,7 +45,7 @@ const EMAIL: &str = "contact@sebastienrousseau.com"; // domain-based business em
 
 // — Web presence (optional — include only if central to your work) —
 const WEBSITE: &str = "https://sebastienrousseau.com"; // "" to skip
-const SOCIAL: &str = ""; // e.g. "https://www.linkedin.com/in/you"; "" to skip
+const SOCIAL: &str = "https://www.linkedin.com/in/sebastienrousseau/"; // "" to skip
 
 // — Branding & output —
 const LOGO_PATH: &str = "examples/assets/logo.svg"; // your logo (SVG/PNG/JPG); "" for none
@@ -118,11 +118,12 @@ fn main() {
     if !WEBSITE.is_empty() {
         card = card.url(WEBSITE);
     }
+    let mut payload = card.to_vcard();
     if !SOCIAL.is_empty() {
-        // vCard carries one URL; the social link rides along as a note.
-        card = card.note(SOCIAL);
+        // The builder carries one URL; add the social profile as a second
+        // URL line so it shows as a proper, tappable link in Contacts.
+        payload = payload.replace("END:VCARD", &format!("URL:{SOCIAL}\r\nEND:VCARD"));
     }
-    let payload = card.to_vcard();
     let m = QRCode::from_string(payload.clone())
         .encode(&QrOptions::new().ecc(Ecc::High))
         .expect("payload too large — trim the card fields");
