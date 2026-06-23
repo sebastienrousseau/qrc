@@ -52,9 +52,10 @@ const LOGO_PATH: &str = "examples/assets/logo.svg"; // your logo (SVG/PNG/JPG); 
 const INK: &str = "#1d1d1f"; // QR + logo color (background is white)
 /// Error correction / density: "low" | "medium" | "quartile" | "high".
 /// Higher protects against damage but makes a *denser, busier* code. A centred
-/// logo only needs the knockout covered, so "quartile" keeps it clean and
-/// premium while staying robust; use "high" only for harsh print conditions.
-const ECC: &str = "quartile";
+/// logo only needs the knockout covered, so "medium" gives the cleanest
+/// premium look while still recovering it; bump to "quartile"/"high" for harsh
+/// print conditions or very small codes.
+const ECC: &str = "medium";
 const OUT: &str = "branded_card"; // writes <OUT>.svg and <OUT>.png
 const MODULE_PX: u32 = 24;
 const KNOCKOUT_FRAC: f32 = 0.16; // knockout radius as a fraction of the QR width
