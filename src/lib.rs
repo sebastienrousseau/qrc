@@ -66,7 +66,7 @@
 //! | AI art-QR via cloud provider (Replicate) | supported (`api` feature) |
 //! | AI art-QR fully local (candle) | demo (`demos/qrc-candle`) |
 //! | Styling (gradients, eye shapes) | planned (Phase 2) |
-//! | Structured payloads (WiFi/EMVCo/EPC) | planned (Phase 2) |
+//! | Payloads: EPC-SEPA / geo / calendar | planned (Phase 2) |
 //! | CLI / WASM / Python bindings | planned (Phase 3) |
 //!
 //! ## Usage

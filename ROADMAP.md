@@ -55,9 +55,14 @@ panic-free `combine_qr_codes`; fixed example; metadata cleanup; an independent
 - **100% documentation**: public items enforced by `deny(missing_docs)`;
   private items verified clean via `clippy::missing_docs_in_private_items`;
   `cargo doc` builds with `-D warnings` and intra-doc-link checks.
-- **Examples for every feature**: `encode_options`, `svg_styling`,
-  `raster_formats`, `terminal`, `legacy_and_macros` — each runs and exercises
-  the full public surface incl. all macros and the free renderer functions.
+- **One example per element**: ~20 focused examples under `examples/` (one per
+  public type/feature — `qrcode`, `qr_options`, `engine`, `matrix`, `color`,
+  `svg_options`, `raster_options`, `unicode`, `logo_options`, `blend_options`,
+  `control_options`, `wifi`/`mecard`/`vcard`/`emvco`, `macros`, `legacy`, plus
+  the `business_card`/`art_qr`/`ai_art` recipes); every one runs without
+  panicking and collectively they exercise the full public surface.
+- **Benchmarks for every area** (`benches/qrc.rs`) and a **regression suite**
+  (`tests/regression.rs`: golden payloads + parametric round-trips + invariants).
 
 **Phase 2 (differentiation) — started.**
 - **Branded codes with logo embedding** (`render::raster::{LogoOptions,
