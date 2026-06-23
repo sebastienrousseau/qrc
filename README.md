@@ -248,14 +248,44 @@ then you can use the functions in your application code.
 
 ### Examples
 
-`QRC` comes with a set of examples that you can use to get started. The
-examples are located in the `examples` directory of the project. To run
-the examples, clone the repository and run the following command in your
-terminal from the project root directory.
+`QRC` ships focused, runnable examples in the [`examples/`](./examples)
+directory — one per element. Clone the repo and run any of them from the
+project root, e.g.:
 
 ```shell
-cargo run --example example
+cargo run --example qrcode --all-features          # construction & conversion
+cargo run --example svg_options --all-features      # SVG shapes, colors, sizing
+cargo run --example raster_options --all-features    # PNG/JPEG/GIF byte encoders
+cargo run --example logo_options --all-features      # logo embedding (branded codes)
+cargo run --example blend_options --all-features      # offline "artistic" blend
+cargo run --example wifi --all-features              # Wi-Fi join payload
+cargo run --example vcard --all-features             # vCard business card
+cargo run --example emvco --all-features             # EMVCo merchant payment
+cargo run --example macros --all-features            # every exported macro
 ```
+
+#### 🦁 Branded business-card QR (template)
+
+[`examples/branded_card.rs`](./examples/branded_card.rs) is a copy-paste
+**template** for a professional, scannable contact QR with **your logo** centred
+in a clean knockout. Edit the `CONFIG` block at the top — full name, job title,
+company, mobile, business email, website, an optional social link, your logo
+path, color and error-correction/density — then:
+
+```shell
+cargo run --example branded_card --all-features
+```
+
+It writes a **print-ready vector `branded_card.svg`** (your logo embedded, sharp
+at any size) plus a `branded_card.png`, and decodes its own output to confirm
+the payload scans. Blank fields are omitted; an optional social link is added as
+a tappable second vCard URL.
+
+#### AI art-QR
+
+The cloud (`feature = "api"`) and fully-local
+([`demos/qrc-candle`](./demos/qrc-candle)) pipelines generate AI "art" QR codes
+from a control image — see [`ROADMAP.md`](./ROADMAP.md).
 
 ## Semantic Versioning Policy
 

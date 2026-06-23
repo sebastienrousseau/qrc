@@ -50,6 +50,11 @@ const SOCIAL: &str = "https://www.linkedin.com/in/sebastienrousseau/"; // "" to 
 // — Branding & output —
 const LOGO_PATH: &str = "examples/assets/logo.svg"; // your logo (SVG/PNG/JPG); "" for none
 const INK: &str = "#1d1d1f"; // QR + logo color (background is white)
+/// Error correction / density: "low" | "medium" | "quartile" | "high".
+/// Higher protects against damage but makes a *denser, busier* code. A centred
+/// logo only needs the knockout covered, so "quartile" keeps it clean and
+/// premium while staying robust; use "high" only for harsh print conditions.
+const ECC: &str = "quartile";
 const OUT: &str = "branded_card"; // writes <OUT>.svg and <OUT>.png
 const MODULE_PX: u32 = 24;
 const KNOCKOUT_FRAC: f32 = 0.16; // knockout radius as a fraction of the QR width
@@ -124,8 +129,14 @@ fn main() {
         // URL line so it shows as a proper, tappable link in Contacts.
         payload = payload.replace("END:VCARD", &format!("URL:{SOCIAL}\r\nEND:VCARD"));
     }
+    let ecc = match ECC {
+        "low" => Ecc::Low,
+        "medium" => Ecc::Medium,
+        "high" => Ecc::High,
+        _ => Ecc::Quartile,
+    };
     let m = QRCode::from_string(payload.clone())
-        .encode(&QrOptions::new().ecc(Ecc::High))
+        .encode(&QrOptions::new().ecc(ecc))
         .expect("payload too large — trim the card fields");
     let (ir, ig, ib) = hex_rgb(INK);
     let n = m.size();
