@@ -32,17 +32,25 @@ use qrc::render::style::Color;
 use qrc::QRCode;
 
 // ───────────────────────────── CONFIG (edit me) ─────────────────────────────
-const FULL_NAME: &str = "Sebastien Rousseau";
+// — Identity (required) —
+const FULL_NAME: &str = "Sebastien Rousseau"; // your preferred professional name
 const FIRST: &str = "Sebastien";
 const LAST: &str = "Rousseau";
-const EMAIL: &str = "contact@sebastienrousseau.com";
-const URL: &str = "https://sebastienrousseau.com";
-/// Path to your logo (SVG or PNG/JPG). Set to "" for no center logo.
-const LOGO_PATH: &str = "examples/assets/logo.svg";
-/// QR + logo color (and background is white).
-const INK: &str = "#1d1d1f";
-/// Output file stem (writes `<OUT>.svg` and `<OUT>.png`).
-const OUT: &str = "branded_card";
+const JOB_TITLE: &str = "Founder & Software Engineer"; // a clear, specific title
+const COMPANY: &str = "Sebastien Rousseau"; // your brand / company name
+
+// — Contact (keep to one each to avoid clutter) —
+const MOBILE: &str = ""; // one primary number, e.g. "+44 20 7946 0000"; "" to skip
+const EMAIL: &str = "contact@sebastienrousseau.com"; // domain-based business email
+
+// — Web presence (optional — include only if central to your work) —
+const WEBSITE: &str = "https://sebastienrousseau.com"; // "" to skip
+const SOCIAL: &str = ""; // e.g. "https://www.linkedin.com/in/you"; "" to skip
+
+// — Branding & output —
+const LOGO_PATH: &str = "examples/assets/logo.svg"; // your logo (SVG/PNG/JPG); "" for none
+const INK: &str = "#1d1d1f"; // QR + logo color (background is white)
+const OUT: &str = "branded_card"; // writes <OUT>.svg and <OUT>.png
 const MODULE_PX: u32 = 24;
 const KNOCKOUT_FRAC: f32 = 0.16; // knockout radius as a fraction of the QR width
 const LOGO_FRAC: f32 = 0.82; // logo size as a fraction of the knockout diameter
@@ -93,10 +101,27 @@ fn logo_data_uri() -> Option<String> {
 }
 
 fn main() {
-    let card = BusinessCard::new(FULL_NAME)
-        .name(FIRST, LAST)
-        .email(EMAIL)
-        .url(URL);
+    // Build the vCard from whichever fields are filled in.
+    let mut card = BusinessCard::new(FULL_NAME).name(FIRST, LAST);
+    if !COMPANY.is_empty() {
+        card = card.organization(COMPANY);
+    }
+    if !JOB_TITLE.is_empty() {
+        card = card.title(JOB_TITLE);
+    }
+    if !MOBILE.is_empty() {
+        card = card.phone(MOBILE);
+    }
+    if !EMAIL.is_empty() {
+        card = card.email(EMAIL);
+    }
+    if !WEBSITE.is_empty() {
+        card = card.url(WEBSITE);
+    }
+    if !SOCIAL.is_empty() {
+        // vCard carries one URL; the social link rides along as a note.
+        card = card.note(SOCIAL);
+    }
     let payload = card.to_vcard();
     let m = QRCode::from_string(payload.clone())
         .encode(&QrOptions::new().ecc(Ecc::High))
