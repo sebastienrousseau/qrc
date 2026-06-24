@@ -11,11 +11,11 @@
 # by `image`'s AVIF/EXR codecs, with no upstream fix) are out of our control and
 # would otherwise block every build. Tighten to "all" once upstream cleans up.
 unmaintained = "workspace"
-ignore = [
-    # atty: potential unaligned read (Windows-only), crate unmaintained, no fix
-    # published. Only reachable via a transitive dev/tooling path, not runtime.
-    "RUSTSEC-2021-0145",
-]
+# Note: `atty`/`rand` appear in Cargo.lock but not in the resolved dependency
+# graph (stale lock entries); `cargo update` prunes them and silences the
+# matching cargo-audit warnings. Add RUSTSEC ids here, with justification, only
+# for advisories that genuinely apply to crates we ship.
+ignore = []
 
 [licenses]
 # Deny-by-default: only licenses on this allow-list are accepted. This set
