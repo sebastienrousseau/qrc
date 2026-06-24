@@ -33,7 +33,7 @@ members = ["xtask"]
 all-features = true
 
 [dependencies]
-image = "0.25.10"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "ico"] }
 js-sys = { version = "0.3", optional = true }
 miniz_oxide = "0.8.9"
 wasm-bindgen = { version = "0.2", optional = true }
