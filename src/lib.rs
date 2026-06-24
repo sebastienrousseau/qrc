@@ -431,7 +431,8 @@ impl QRCode {
                             let cx = px + module_size / 2.0;
                             let cy = py + module_size / 2.0;
                             let r = module_size / 2.0;
-                            let _ = write!(elements,
+                            let _ = write!(
+                                elements,
                                 "<circle cx=\"{cx}\" cy=\"{cy}\" r=\"{r}\" fill=\"#000000\"/>"
                             );
                         }
@@ -470,10 +471,7 @@ impl QRCode {
     ///
     /// A colorized `RgbaImage` of the QR code.
     #[must_use]
-    #[allow(
-        clippy::cast_possible_truncation,
-        clippy::cast_precision_loss
-    )]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
     pub fn colorize(&self, color: Rgba<u8>) -> RgbaImage {
         let qrcode = self.to_qrcode();
         let qr_dim = qrcode.width() as u32;
@@ -513,8 +511,7 @@ impl QRCode {
         let qr_width = qrcode.width() as f64;
         let module_size_x = f64::from(width) / qr_width;
         let module_size_y = f64::from(height) / qr_width;
-        let mut img: RgbaImage =
-            ImageBuffer::from_pixel(width, height, Rgba([255, 255, 255, 255]));
+        let mut img: RgbaImage = ImageBuffer::from_pixel(width, height, Rgba([255, 255, 255, 255]));
         for y in 0..height {
             for x in 0..width {
                 let x_index = (f64::from(x) / f64::from(width) * qr_width) as usize;
@@ -661,8 +658,7 @@ impl QRCode {
                     let combined_x = x + x_offset;
 
                     if pixel == Color::Dark {
-                        combined_image
-                            .put_pixel(combined_x, y, Rgba([0, 0, 0, 255]));
+                        combined_image.put_pixel(combined_x, y, Rgba([0, 0, 0, 255]));
                     }
                 }
             }
