@@ -1,0 +1,26 @@
+# Pre-commit hooks — block secrets and large files, enforce Rust formatting.
+# Activate once with:  pip install pre-commit && pre-commit install
+# Baseline sweep:       pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files # block accidental binaries/blobs
+        args: ["--maxkb=256"]
+      - id: detect-private-key # block committed private keys
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-yaml
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks # secret scanning on the staged diff
+
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: v1.0
+    hooks:
+      - id: fmt # cargo fmt --check
+      - id: clippy
+        args: ["--all-targets", "--all-features", "--", "-D", "warnings"]

@@ -1,23 +1,42 @@
-name: 🧪 Audit
+name: 🛡️ Supply Chain
 
+# Runs the supply-chain scanners where they actually matter: every push and PR
+# to `main`, on a weekly schedule (to catch newly-disclosed CVEs against
+# unchanged dependencies), on release, and on demand.
 on:
   push:
-    branches:
-      - feat/qrc
+    branches: [main]
   pull_request:
-    branches:
-      - feat/qrc
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
   release:
     types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  dependencies:
-    name: Audit dependencies
+  audit:
+    name: cargo audit + cargo deny
     runs-on: ubuntu-latest
     steps:
-      - uses: hecrj/setup-rust-action@v2
-      - name: Install cargo-audit
-        run: cargo install cargo-audit
       - uses: actions/checkout@v4
-      - name: Audit dependencies
-        run: cargo audit
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      # RustSec advisory database — fails the build on known CVEs and
+      # annotates the PR with the affected crates.
+      - name: Audit dependencies (RustSec)
+        uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Enforces the existing deny.toml policy (advisories + license allow-list
+      # + banned/duplicate-crate rules) that was previously never run in CI.
+      - name: Enforce supply-chain policy (cargo-deny)
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check
