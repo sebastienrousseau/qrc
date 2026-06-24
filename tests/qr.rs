@@ -273,8 +273,7 @@ mod tests {
 
     #[test]
     fn test_shape_svg_rounded() {
-        let qr =
-            QRCode::from_string("shapes".to_string()).with_shape(ModuleShape::RoundedSquare);
+        let qr = QRCode::from_string("shapes".to_string()).with_shape(ModuleShape::RoundedSquare);
         let svg = qr.to_svg(256);
         assert!(svg.contains("rx="));
         assert!(svg.contains("ry="));

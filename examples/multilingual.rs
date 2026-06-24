@@ -38,18 +38,21 @@ fn main() {
     });
 
     // ── Using the macro (default "en") ────────────────────────────────
-    support::task_with_output("Create via create_multilanguage_qr! macro (default)", || {
-        let qr = create_multilanguage_qr! {
-            "en" => "https://example.com/en/guide",
-            "es" => "https://example.com/es/guia",
-            "fr" => "https://example.com/fr/guide",
-            "ja" => "https://example.com/ja/gaido",
-        };
-        vec![
-            format!("Encoded: {}", String::from_utf8_lossy(&qr.data)),
-            format!("Macro:   create_multilanguage_qr! {{ \"en\" => ..., ... }}"),
-        ]
-    });
+    support::task_with_output(
+        "Create via create_multilanguage_qr! macro (default)",
+        || {
+            let qr = create_multilanguage_qr! {
+                "en" => "https://example.com/en/guide",
+                "es" => "https://example.com/es/guia",
+                "fr" => "https://example.com/fr/guide",
+                "ja" => "https://example.com/ja/gaido",
+            };
+            vec![
+                format!("Encoded: {}", String::from_utf8_lossy(&qr.data)),
+                format!("Macro:   create_multilanguage_qr! {{ \"en\" => ..., ... }}"),
+            ]
+        },
+    );
 
     // ── Using the macro with explicit language ─────────────────────────
     support::task_with_output("Create via macro with language preference", || {
