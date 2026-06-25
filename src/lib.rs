@@ -429,12 +429,6 @@ impl QRCode {
                     let px = x as f64 * module_size;
                     let py = y as f64 * module_size;
                     match self.shape {
-                        ModuleShape::RoundedSquare => {
-                            let r = module_size * 0.3;
-                            let _ = write!(elements,
-                                "<rect x=\"{px}\" y=\"{py}\" width=\"{module_size}\" height=\"{module_size}\" rx=\"{r}\" ry=\"{r}\" fill=\"#000000\"/>"
-                            );
-                        }
                         ModuleShape::Circle => {
                             let cx = px + module_size / 2.0;
                             let cy = py + module_size / 2.0;
@@ -458,7 +452,13 @@ impl QRCode {
                                 "<polygon points=\"{top_x},{top_y} {right_x},{right_y} {bot_x},{bot_y} {left_x},{left_y}\" fill=\"#000000\"/>"
                             );
                         }
-                        ModuleShape::Square => unreachable!(),
+                        // RoundedSquare; `Square` is handled by the early return above.
+                        _ => {
+                            let r = module_size * 0.3;
+                            let _ = write!(elements,
+                                "<rect x=\"{px}\" y=\"{py}\" width=\"{module_size}\" height=\"{module_size}\" rx=\"{r}\" ry=\"{r}\" fill=\"#000000\"/>"
+                            );
+                        }
                     }
                 }
             }
@@ -615,15 +615,7 @@ impl QRCode {
     /// A `QRCode` instance representing a dynamic QR code.
     #[must_use]
     pub fn create_dynamic(initial_data: &str) -> Self {
-        let dynamic_data_format = "url";
-
-        let dynamic_url = match dynamic_data_format {
-            "url" => {
-                format!("https://your-api-endpoint.com/update?qrcode={initial_data}")
-            }
-            _ => return Self::from_string(initial_data.to_string()),
-        };
-
+        let dynamic_url = format!("https://your-api-endpoint.com/update?qrcode={initial_data}");
         Self::from_string(dynamic_url)
     }
 
