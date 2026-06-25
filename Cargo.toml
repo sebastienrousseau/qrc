@@ -1,6 +1,6 @@
 [package]
 authors = ["QRC"]
-categories = ["Algorithms", "Encoding", "Images", "Rendering", "Visualization"]
+categories = ["algorithms", "encoding", "multimedia::images", "rendering", "visualization"]
 description = """
 A Rust library for generating and manipulating QR code images in various formats
 """
