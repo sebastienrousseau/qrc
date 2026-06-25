@@ -4,7 +4,7 @@
 //!
 //! # A Rust library for generating and manipulating QR code images in various formats
 //!
-//! [![Rust](https://kura.pro/qrc/images/banners/banner-qrc.webp)](https://qrclib.one)
+//! [![Rust](https://kura.pro/qrc/images/banners/banner-qrc.webp)](https://qrclib.com)
 //!
 //! <center>
 //!
