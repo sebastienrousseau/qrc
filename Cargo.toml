@@ -167,3 +167,11 @@ path = "examples/mecard.rs"
 [[example]]
 name = "emvco"
 path = "examples/emvco.rs"
+
+[[example]]
+name = "control_image"
+path = "examples/control_image.rs"
+
+[[example]]
+name = "art_qr"
+path = "examples/art_qr.rs"
