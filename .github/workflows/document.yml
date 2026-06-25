@@ -38,7 +38,7 @@ jobs:
         run: echo '<!DOCTYPE html><meta http-equiv="refresh" content="0; url=qrc/">' > target/doc/index.html
 
       - name: Preserve custom domain
-        run: echo 'doc.qrclib.one' > target/doc/CNAME
+        run: echo 'doc.qrclib.com' > target/doc/CNAME
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
