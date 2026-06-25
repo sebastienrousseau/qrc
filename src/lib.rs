@@ -335,56 +335,59 @@ impl QRCode {
         self.render_image(width)
     }
 
-    /// Returns the PNG-encoded bytes of the QR code.
-    ///
-    /// # Panics
-    ///
-    /// Panics if PNG encoding fails (should not happen in practice).
-    #[must_use]
-    pub fn to_png_bytes(&self, width: u32) -> Vec<u8> {
+    /// Renders the QR code and encodes it to `format`, returning the bytes.
+    fn encode_bytes(&self, width: u32, format: ImageFormat) -> Result<Vec<u8>, image::ImageError> {
         let img = self.render_image(width);
         let mut buf = Cursor::new(Vec::new());
-        DynamicImage::ImageRgba8(img)
-            .write_to(&mut buf, ImageFormat::Png)
-            .expect("PNG encoding failed");
-        buf.into_inner()
+        DynamicImage::ImageRgba8(img).write_to(&mut buf, format)?;
+        Ok(buf.into_inner())
     }
 
-    /// Returns actual JPEG-encoded bytes (quality 85) of the QR code.
-    #[must_use]
-    pub fn to_jpg(&self, width: u32) -> Vec<u8> {
+    /// Returns the PNG-encoded bytes of the QR code.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`image::ImageError`] if encoding fails — for example, a
+    /// `width` of `0`, which is not a valid PNG size.
+    pub fn to_png_bytes(&self, width: u32) -> Result<Vec<u8>, image::ImageError> {
+        self.encode_bytes(width, ImageFormat::Png)
+    }
+
+    /// Returns GIF-encoded bytes of the QR code.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`image::ImageError`] if GIF encoding fails.
+    pub fn to_gif(&self, width: u32) -> Result<Vec<u8>, image::ImageError> {
+        self.encode_bytes(width, ImageFormat::Gif)
+    }
+
+    /// Returns JPEG-encoded bytes (quality 85) of the QR code.
+    ///
+    /// # Errors
+    ///
+    /// Returns an [`image::ImageError`] if encoding fails — for example, a
+    /// `width` of `0`, which is not a valid JPEG size.
+    pub fn to_jpg(&self, width: u32) -> Result<Vec<u8>, image::ImageError> {
         self.to_jpg_with_quality(width, 85)
     }
 
     /// Returns JPEG-encoded bytes at a custom quality (1-100).
     ///
-    /// # Panics
+    /// # Errors
     ///
-    /// Panics if JPEG encoding fails (should not happen in practice).
-    #[must_use]
-    pub fn to_jpg_with_quality(&self, width: u32, quality: u8) -> Vec<u8> {
+    /// Returns an [`image::ImageError`] if encoding fails — for example, a
+    /// `width` of `0`, which is not a valid JPEG size.
+    pub fn to_jpg_with_quality(
+        &self,
+        width: u32,
+        quality: u8,
+    ) -> Result<Vec<u8>, image::ImageError> {
         let img = self.render_image(width);
         let rgb = DynamicImage::ImageRgba8(img).to_rgb8();
         let mut buf = Cursor::new(Vec::new());
-        image::codecs::jpeg::JpegEncoder::new_with_quality(&mut buf, quality)
-            .encode_image(&rgb)
-            .expect("JPEG encoding failed");
-        buf.into_inner()
-    }
-
-    /// Returns actual GIF-encoded bytes of the QR code.
-    ///
-    /// # Panics
-    ///
-    /// Panics if GIF encoding fails (should not happen in practice).
-    #[must_use]
-    pub fn to_gif(&self, width: u32) -> Vec<u8> {
-        let img = self.render_image(width);
-        let mut buf = Cursor::new(Vec::new());
-        DynamicImage::ImageRgba8(img)
-            .write_to(&mut buf, ImageFormat::Gif)
-            .expect("GIF encoding failed");
-        buf.into_inner()
+        image::codecs::jpeg::JpegEncoder::new_with_quality(&mut buf, quality).encode_image(&rgb)?;
+        Ok(buf.into_inner())
     }
 
     /// Returns the raw RGBA image buffer for the QR code.

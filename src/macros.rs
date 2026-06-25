@@ -65,7 +65,8 @@ macro_rules! qr_code_with_ec {
 #[macro_export]
 /// Macro to create a QR code in a specified format with a given width.
 ///
-/// All arms return `Vec<u8>` containing the encoded image bytes.
+/// All arms return `Result<Vec<u8>, image::ImageError>` containing the encoded
+/// image bytes (or an encoding error, e.g. a zero width).
 ///
 /// # Parameters
 /// * `$data` - The data to be encoded in the QR code.
@@ -75,7 +76,7 @@ macro_rules! qr_code_with_ec {
 /// # Example
 /// ```
 /// use qrc::{QRCode, qr_code_to};
-/// let bytes = qr_code_to!("Hello, world!".into(), "png", 256);
+/// let bytes = qr_code_to!("Hello, world!".into(), "png", 256).unwrap();
 /// assert!(!bytes.is_empty());
 /// ```
 macro_rules! qr_code_to {

@@ -41,9 +41,9 @@ fn main() {
 
     // ── qr_code_to! ───────────────────────────────────────────────────
     support::task_with_output("qr_code_to! — Create and convert in one step", || {
-        let png = qr_code_to!("Hello QRC".into(), "png", 128);
-        let jpg = qr_code_to!("Hello QRC".into(), "jpg", 128);
-        let gif = qr_code_to!("Hello QRC".into(), "gif", 128);
+        let png = qr_code_to!("Hello QRC".into(), "png", 128).unwrap();
+        let jpg = qr_code_to!("Hello QRC".into(), "jpg", 128).unwrap();
+        let gif = qr_code_to!("Hello QRC".into(), "gif", 128).unwrap();
         vec![
             format!("PNG: {} bytes", png.len()),
             format!("JPG: {} bytes", jpg.len()),

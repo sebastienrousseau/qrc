@@ -44,11 +44,16 @@ fn every_output_format() {
     let qr = QRCode::from_string(URL.to_string());
     assert_eq!(qr.to_png(64).dimensions(), (64, 64));
     assert_eq!(qr.to_image(64).dimensions(), (64, 64));
-    assert!(!qr.to_png_bytes(64).is_empty());
-    assert!(!qr.to_jpg(64).is_empty());
-    assert!(!qr.to_jpg_with_quality(64, 50).is_empty());
-    assert!(!qr.to_gif(64).is_empty());
+    assert!(!qr.to_png_bytes(64).unwrap().is_empty());
+    assert!(!qr.to_jpg(64).unwrap().is_empty());
+    assert!(!qr.to_jpg_with_quality(64, 50).unwrap().is_empty());
+    assert!(!qr.to_gif(64).unwrap().is_empty());
     assert!(qr.to_svg(64).contains("<svg"));
+
+    // Encoding errors propagate: width 0 is not a valid PNG/JPEG size.
+    assert!(qr.to_png_bytes(0).is_err());
+    assert!(qr.to_jpg(0).is_err());
+    assert!(qr.to_jpg_with_quality(0, 50).is_err());
 }
 
 #[test]
@@ -95,6 +100,12 @@ fn colorize_and_resize() {
     let qr = QRCode::from_string(URL.to_string());
     assert!(qr.colorize(Rgba([0, 102, 204, 255])).dimensions().0 > 0);
     assert_eq!(qr.resize(80, 40).dimensions(), (80, 40));
+
+    // A non-square shape leaves gaps inside each dark module, exercising the
+    // `is_inside_shape == false` branch in both colorize and resize.
+    let circ = QRCode::from_string(URL.to_string()).with_shape(ModuleShape::Circle);
+    assert!(circ.colorize(Rgba([10, 20, 30, 255])).dimensions().0 > 0);
+    assert_eq!(circ.resize(60, 60).dimensions(), (60, 60));
 }
 
 // --- Logos / watermarks / art ---------------------------------------------
@@ -110,6 +121,11 @@ fn overlay_watermark_and_art() {
     logo.put_pixel(0, 0, Rgba([0, 0, 0, 0]));
     let overlaid = qr.overlay_image(&logo);
     assert!(overlaid.width() > 24);
+
+    // An oversized overlay spills past the canvas, exercising the bounds-clamp
+    // (`px < dim && py < dim` == false) branch.
+    let big: RgbaImage = ImageBuffer::from_pixel(4000, 4000, Rgba([1, 2, 3, 255]));
+    let _ = qr.overlay_image(&big);
 
     // Static watermark mutates the passed image in place.
     let mut canvas = qr.to_png(200);
@@ -202,4 +218,7 @@ fn wasm_bindings_cover_every_branch() {
     assert!(qr.to_svg(128).contains("<svg"));
     assert!(!qr.to_png_bytes(128).is_empty());
     assert!(!qr.to_jpg(128).is_empty());
+    // width 0 -> inner Err -> the binding's `unwrap_or_default` returns empty.
+    assert!(qr.to_png_bytes(0).is_empty());
+    assert!(qr.to_jpg(0).is_empty());
 }

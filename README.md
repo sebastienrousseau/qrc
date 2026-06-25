@@ -144,8 +144,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     qr.to_png(512).save("qrcode.png")?;
 
     // `to_jpg` / `to_gif` return ALREADY-ENCODED bytes (`Vec<u8>`) → write them.
-    std::fs::write("qrcode.jpg", qr.to_jpg(512))?;
-    std::fs::write("qrcode.gif", qr.to_gif(512))?;
+    std::fs::write("qrcode.jpg", qr.to_jpg(512)?)?;
+    std::fs::write("qrcode.gif", qr.to_gif(512)?)?;
 
     // `to_svg` returns a `String`.
     std::fs::write("qrcode.svg", qr.to_svg(512))?;
