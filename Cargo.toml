@@ -167,3 +167,7 @@ path = "examples/mecard.rs"
 [[example]]
 name = "emvco"
 path = "examples/emvco.rs"
+
+[[example]]
+name = "business_card"
+path = "examples/business_card.rs"
