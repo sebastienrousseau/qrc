@@ -7,7 +7,7 @@
 <h1 align="center">QR Code Library (QRC)</h1>
 
 <p align="center">
-  <strong>Generate and manipulate QR code images in PNG, JPG, GIF, and SVG -- built in Rust.</strong>
+  <strong>Generate and style QR codes as PNG, JPG, GIF, and SVG — fast, dependency-light, and 100% safe Rust.</strong>
 </p>
 
 <p align="center">
@@ -22,15 +22,17 @@
 
 ## Contents
 
-- [Install](#install) -- add to Cargo.toml and start generating
-- [Quick Start](#quick-start) -- create a QR code in 4 lines
-- [Overview](#overview) -- what QRC does
-- [Features](#features) -- v0.0.6 capability matrix
-- [Library Usage](#library-usage) -- formats, colours, watermarks, macros
-- [Macros](#macros) -- 11 convenience macros
-- [Examples](#examples) -- 13 focused examples
-- [Development](#development) -- build, test, lint
-- [Security](#security) -- safety guarantees
+- [Install](#install) — add it and start generating
+- [Quick Start](#quick-start) — a QR code in 4 lines
+- [Overview](#overview) — what QRC does
+- [Features](#features) — v0.0.6 capability matrix
+- [Library Usage](#library-usage) — formats, styling, watermarks
+- [Structured Payloads](#structured-payloads) — vCard, Wi-Fi, MeCard, EMVCo
+- [Macros](#macros) — 11 convenience macros
+- [Examples](#examples) — 17 focused examples
+- [Development](#development) — build, test, lint
+- [Security](#security) — safety guarantees
+- [Documentation](#documentation)
 - [License](#license)
 
 ---
@@ -42,6 +44,22 @@
 qrc = "0.0.6"
 ```
 
+…or from the command line:
+
+```bash
+cargo add qrc
+```
+
+### Cargo features
+
+| Feature  | Default | Pulls in                         | Adds                                               |
+| :------- | :-----: | :------------------------------- | :------------------------------------------------- |
+| *(core)* |    ✓    | `image`, `qrcode`, `miniz_oxide` | QR generation, PNG/JPG/GIF/SVG, payloads, macros   |
+| `wasm`   |         | `wasm-bindgen`, `js-sys`         | WebAssembly bindings (`qrc::wasm`) for the browser |
+
+The core API needs **no default features**. The `image` dependency is compiled
+with only the `png`, `jpeg`, `gif`, and `ico` codecs, keeping the tree lean.
+
 ### Build from source
 
 ```bash
@@ -50,7 +68,7 @@ cd qrc
 cargo build --release
 ```
 
-Requires **Rust 1.75.0+**. Tested on Linux, macOS, and Windows.
+Requires **Rust 1.75.0+** (MSRV). Tested on Linux, macOS, and Windows.
 
 ---
 
@@ -59,36 +77,36 @@ Requires **Rust 1.75.0+**. Tested on Linux, macOS, and Windows.
 ```rust
 use qrc::QRCode;
 
-// 1 -- Create a QR code from any string
-let qr = QRCode::from_string("https://example.com".to_string());
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Build a QR code from any string.
+    let qr = QRCode::from_string("https://example.com".to_string());
 
-// 2 -- Export as PNG (512x512)
-let png = qr.to_png(512);
-png.save("qrcode.png").unwrap();
+    // `to_png` returns an `ImageBuffer`, so it has `.save`.
+    qr.to_png(512).save("qrcode.png")?;
 
-// 3 -- Export as SVG (infinite scaling)
-let svg = qr.to_svg(512);
-std::fs::write("qrcode.svg", &svg).unwrap();
+    // `to_svg` returns a `String` — write it yourself (scales infinitely).
+    std::fs::write("qrcode.svg", qr.to_svg(512))?;
 
-// 4 -- Customise with colour
-let coloured = qr.colorize(image::Rgba([0, 102, 204, 255]));
+    Ok(())
+}
 ```
 
 ---
 
 ## Overview
 
-QRC generates QR code images from strings, byte vectors, or raw data. It renders to four image formats, supports colour customisation, watermarking, logo overlays, batch generation, and data compression -- all with zero unsafe code.
+QRC turns strings, byte vectors, or raw data into QR code images. It renders to
+four formats, lets you pick the error-correction level and module shape, and
+ships builders for structured payloads (contacts, Wi-Fi, payments) — all with
+zero `unsafe`.
 
-- **4 output formats** -- PNG, JPG, GIF, SVG
-- **Colour customisation** -- any RGBA colour for dark modules
-- **Image watermarks** -- alpha-blended logos in the corner
-- **Logo overlays** -- centre-placed images on the QR code
-- **Batch generation** -- generate hundreds of QR codes in one call
-- **Multi-language** -- language-aware QR codes from a translation map
-- **Data compression** -- Zlib-compress data before encoding
-- **Dynamic QR codes** -- URL-based codes that can be updated after creation
-- **Zero unsafe code** -- `#![forbid(unsafe_code)]` across the entire codebase
+- **4 output formats** — PNG, JPG, GIF, SVG
+- **Styling** — 4 error-correction levels and 4 module shapes
+- **Structured payloads** — vCard, Wi-Fi, MeCard, EMVCo merchant payments
+- **Colour customisation** — any RGBA colour for dark modules
+- **Watermarks & overlays** — corner watermark or centre logo
+- **Batch generation** — many codes in one call
+- **Zero unsafe code** — `#![forbid(unsafe_code)]` crate-wide
 
 ---
 
@@ -96,30 +114,18 @@ QRC generates QR code images from strings, byte vectors, or raw data. It renders
 
 | | |
 | :--- | :--- |
-| **Formats** | PNG, JPG, GIF (raster via `image` crate), SVG (vector via `qrcode` crate) |
-| **Colours** | Custom RGBA colour for dark modules, white background |
-| **Watermarks** | Alpha-blended watermark placement in bottom-right corner |
-| **Overlays** | Centre-placed logo overlay on any QR code |
-| **Resizing** | Arbitrary width/height scaling with pixel-level control |
-| **Compression** | Zlib compression via `miniz_oxide` (level 6) |
-| **Batch** | Generate a `Vec<QRCode>` from a `Vec<String>` in one call |
-| **Combine** | Merge multiple QR codes side-by-side into a single image |
-| **Dynamic** | URL-based QR codes for post-creation updates |
-| **Multi-language** | HashMap-driven language selection with BCP 47 codes |
-| **Encoding** | UTF-8 encoding format with validation |
-| **Macros** | 11 convenience macros for every operation |
+| **Formats** | PNG, JPG, GIF (raster via `image`), SVG (vector via `qrcode`) |
+| **Error correction** | `EcLevel::{L, M, Q, H}` via `with_ec_level` (default `M`) |
+| **Module shapes** | `ModuleShape::{Square, RoundedSquare, Circle, Diamond}` via `with_shape` |
+| **Payloads** | `payload::{vcard, wifi, mecard, emvco}` — dependency-free string builders |
+| **Colours** | Custom RGBA dark modules on a white background |
+| **Watermarks / Overlays** | Alpha-blended corner watermark; centre logo overlay |
+| **Resizing** | Arbitrary width/height scaling |
+| **Batch / Combine** | `Vec<String>` → `Vec<QRCode>`; merge codes side-by-side |
+| **Macros** | 11 convenience macros |
 | **Safety** | `#![forbid(unsafe_code)]`, `#![deny(missing_docs)]` |
 | **MSRV** | Rust 1.75.0 |
-| **Dependencies** | 3 runtime (`image`, `qrcode`, `miniz_oxide`) |
-
-### Metrics
-
-| Metric | Value |
-| :--- | :--- |
-| **Test suite** | 16 unit tests + 14 doc-tests |
-| **Examples** | 13 focused examples |
-| **Benchmarks** | 7 Criterion benchmarks |
-| **Dependencies** | 3 runtime, 1 dev |
+| **Runtime deps** | 3 (`image`, `qrcode`, `miniz_oxide`) |
 
 ---
 
@@ -130,25 +136,40 @@ QRC generates QR code images from strings, byte vectors, or raw data. It renders
 
 ```rust
 use qrc::QRCode;
-use image::DynamicImage;
 
-let qr = QRCode::from_string("https://docs.rs/qrc".to_string());
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let qr = QRCode::from_string("https://docs.rs/qrc".to_string());
 
-// PNG -- lossless, web-ready
-let png = qr.to_png(512);
-png.save("qrcode.png").unwrap();
+    // `to_png` / `to_image` return an `ImageBuffer` → use `.save`.
+    qr.to_png(512).save("qrcode.png")?;
 
-// JPG -- convert RGBA to RGB for JPEG compatibility
-let jpg = qr.to_jpg(512);
-DynamicImage::ImageRgba8(jpg).to_rgb8().save("qrcode.jpg").unwrap();
+    // `to_jpg` / `to_gif` return ALREADY-ENCODED bytes (`Vec<u8>`) → write them.
+    std::fs::write("qrcode.jpg", qr.to_jpg(512))?;
+    std::fs::write("qrcode.gif", qr.to_gif(512))?;
 
-// GIF -- small palette, universal
-let gif = qr.to_gif(512);
-gif.save("qrcode.gif").unwrap();
+    // `to_svg` returns a `String`.
+    std::fs::write("qrcode.svg", qr.to_svg(512))?;
 
-// SVG -- vector, infinite scaling
-let svg = qr.to_svg(512);
-std::fs::write("qrcode.svg", &svg).unwrap();
+    Ok(())
+}
+```
+
+</details>
+
+<details>
+<summary><b>Pick error-correction level and module shape</b></summary>
+
+```rust
+use qrc::{QRCode, EcLevel, ModuleShape};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let qr = QRCode::from_string("https://example.com".to_string())
+        .with_ec_level(EcLevel::H)        // ~30% recovery — best for logos/print
+        .with_shape(ModuleShape::Circle); // Square | RoundedSquare | Circle | Diamond
+
+    qr.to_png(512).save("styled.png")?;
+    Ok(())
+}
 ```
 
 </details>
@@ -160,9 +181,13 @@ std::fs::write("qrcode.svg", &svg).unwrap();
 use qrc::QRCode;
 use image::Rgba;
 
-let qr = QRCode::from_string("https://example.com".to_string());
-let blue_qr = qr.colorize(Rgba([0, 102, 204, 255]));
-blue_qr.save("blue_qrcode.png").unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let qr = QRCode::from_string("https://example.com".to_string());
+
+    // `colorize` returns an `RgbaImage` → use `.save`.
+    qr.colorize(Rgba([0, 102, 204, 255])).save("blue_qrcode.png")?;
+    Ok(())
+}
 ```
 
 </details>
@@ -174,13 +199,16 @@ blue_qr.save("blue_qrcode.png").unwrap();
 use qrc::QRCode;
 use image::{ImageBuffer, Rgba};
 
-let qr = QRCode::from_string("https://example.com".to_string());
-let mut img = qr.to_png(512);
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut img = QRCode::from_string("https://example.com".to_string()).to_png(512);
 
-// Create a 20x20 red logo
-let logo = ImageBuffer::from_fn(20, 20, |_, _| Rgba([220, 20, 60, 255]));
-QRCode::add_image_watermark(&mut img, &logo);
-img.save("watermarked.png").unwrap();
+    // A 20×20 crimson logo, alpha-blended into the corner.
+    let logo = ImageBuffer::from_fn(20, 20, |_, _| Rgba([220, 20, 60, 255]));
+    QRCode::add_image_watermark(&mut img, &logo);
+
+    img.save("watermarked.png")?;
+    Ok(())
+}
 ```
 
 </details>
@@ -191,93 +219,122 @@ img.save("watermarked.png").unwrap();
 ```rust
 use qrc::QRCode;
 
-let urls = vec![
-    "https://example.com/1".to_string(),
-    "https://example.com/2".to_string(),
-    "https://example.com/3".to_string(),
-];
-let codes = QRCode::batch_generate_qr_codes(urls);
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let urls = vec![
+        "https://example.com/1".to_string(),
+        "https://example.com/2".to_string(),
+    ];
 
-for (i, qr) in codes.iter().enumerate() {
-    qr.to_png(256).save(format!("qr_{i}.png")).unwrap();
+    for (i, qr) in QRCode::batch_generate_qr_codes(urls).iter().enumerate() {
+        qr.to_png(256).save(format!("qr_{i}.png"))?;
+    }
+    Ok(())
 }
 ```
 
 </details>
 
-<details>
-<summary><b>Compress data before encoding</b></summary>
+---
+
+## Structured Payloads
+
+`qrc::payload` builds the exact text conventions scanners act on — so a scan
+offers "Add to Contacts" or "Join Wi-Fi" instead of showing raw text. The
+builders are plain strings with no extra dependencies.
 
 ```rust
 use qrc::QRCode;
+use qrc::payload::vcard::BusinessCard;
+use qrc::payload::wifi::{WifiNetwork, WifiSecurity};
 
-let data = "A very long string that benefits from compression...";
-let compressed = QRCode::compress_data(data);
-let qr = QRCode::from_bytes(compressed);
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Contact card (RFC 6350 / vCard 3.0).
+    let card = BusinessCard::new("Jane Doe")
+        .organization("Acme, Inc.")
+        .title("CEO")
+        .email("jane@acme.example")
+        .url("https://acme.example");
+    QRCode::from_string(card.to_vcard()).to_png(512).save("contact.png")?;
+
+    // Wi-Fi join code.
+    let wifi = WifiNetwork::new("Acme Guest")
+        .security(WifiSecurity::Wpa)
+        .password("hunter2");
+    QRCode::from_string(wifi.to_qr_string()).to_png(512).save("wifi.png")?;
+
+    Ok(())
+}
 ```
 
-</details>
+| Builder | Module | Emits |
+| :--- | :--- | :--- |
+| `BusinessCard` | `payload::vcard` | RFC 6350 vCard 3.0 |
+| `WifiNetwork` | `payload::wifi` | `WIFI:` join string |
+| `MeCard` | `payload::mecard` | Compact contact |
+| `MerchantPayment` | `payload::emvco` | EMVCo MPM + CRC-16/CCITT |
 
 ---
 
 ## Macros
 
-11 convenience macros for every QRC operation:
+11 convenience macros for common operations:
 
 | Macro | Description |
 | :--- | :--- |
 | `qr_code!(data)` | Create a new QR code |
 | `qr_code_to!(data, format, width)` | Create in a specific format (png/jpg/gif) |
-| `add_image_watermark!(img, watermark)` | Add a watermark to a QR code image |
-| `resize!(qrcode, size)` | Resize a QR code to square dimensions |
+| `add_image_watermark!(img, watermark)` | Add a watermark to a QR image |
+| `resize!(qrcode, size)` | Resize to square dimensions |
 | `set_encoding_format!(qr, format)` | Set the encoding format |
 | `overlay_image!(qr, image)` | Overlay a logo at the centre |
 | `batch_generate_qr!(data_list)` | Generate multiple QR codes |
 | `compress_data_macro!(data)` | Compress data via Zlib |
-| `combine_qr_codes!(codes)` | Combine multiple QR codes side-by-side |
+| `combine_qr_codes!(codes)` | Combine codes side-by-side |
 | `create_dynamic_qr!(data)` | Create a dynamic (URL-based) QR code |
 | `create_multilanguage_qr!("en" => "Hello", ...)` | Multi-language QR code |
 
-See the [macros example](examples/macros.rs) for detailed usage.
+See the [`macros` example](examples/macros.rs) for full usage.
 
 ---
 
 ## Examples
 
-Run any example:
-
 ```bash
 cargo run --example basic
-cargo run --example formats
+cargo run --example vcard
 ```
 
 | Example | Purpose |
 | :--- | :--- |
-| `basic` | QR code construction from bytes, strings, and vectors |
-| `formats` | Export to PNG, JPG, GIF, and SVG with file size comparison |
-| `colorize` | Apply custom RGBA colours to QR code modules |
-| `resize` | Resize QR codes for print, web, and thumbnail use cases |
-| `watermark` | Add watermark logos with alpha blending |
-| `overlay` | Centre-place a logo on a QR code |
-| `compress` | Zlib-compress data before QR encoding |
-| `batch` | Generate multiple QR codes from a URL list |
-| `combine` | Merge multiple QR codes into a single image |
+| `basic` | Construction from bytes, strings, and vectors |
+| `formats` | Export to PNG, JPG, GIF, and SVG |
+| `colorize` | Custom RGBA module colours |
+| `resize` | Print, web, and thumbnail sizing |
+| `watermark` | Alpha-blended watermark logos |
+| `overlay` | Centre-placed logo |
+| `compress` | Zlib-compress data before encoding |
+| `batch` | Generate many codes from a URL list |
+| `combine` | Merge codes into one image |
 | `encoding` | Set and validate encoding formats |
-| `dynamic` | Create dynamic QR codes with updatable URLs |
-| `multilingual` | Language-aware QR codes from a translation map |
-| `macros` | Demonstrate all 11 convenience macros |
+| `dynamic` | Updatable URL-based codes |
+| `multilingual` | Language-aware codes from a translation map |
+| `macros` | All 11 convenience macros |
+| `vcard` | vCard contact card |
+| `wifi` | Wi-Fi join code |
+| `mecard` | Compact MeCard contact |
+| `emvco` | EMVCo merchant payment |
 
 ---
 
 ## Development
 
 ```bash
-cargo build               # build the library
-cargo test                 # run all tests (16 unit + 14 doc-tests)
+cargo build                # build the library
+cargo test                 # unit, integration, and doc-tests
 cargo clippy --all-targets # lint with Clippy
 cargo fmt --all            # format with rustfmt
-cargo bench                # run Criterion benchmarks
-cargo xtask ci             # full CI pipeline (fmt + clippy + test)
+cargo bench                # Criterion benchmarks
+cargo xtask ci             # full local CI (fmt + clippy + test)
 ```
 
 ### CI
@@ -285,8 +342,8 @@ cargo xtask ci             # full CI pipeline (fmt + clippy + test)
 | Workflow | Trigger | Purpose |
 | :--- | :--- | :--- |
 | `ci.yml` | push, PR | fmt, clippy, test (3 OS), MSRV, cargo-deny, security audit |
-| `document.yml` | push to main | Build and deploy API docs to GitHub Pages |
-| `release.yml` | tag `v*` | Cross-platform binaries (21 targets), crates.io publish |
+| `document.yml` | push to `main` | Build and deploy API docs |
+| `release.yml` | tag `v*` | Cross-platform binaries, crates.io publish |
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for PR guidelines.
 
@@ -294,17 +351,17 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for PR guidelines.
 
 ## Security
 
-<details>
-<summary><b>Safety guarantees</b></summary>
-
 - `#![forbid(unsafe_code)]` across the entire codebase
-- `#![deny(missing_docs)]` -- every public item is documented
-- `cargo audit` with zero advisories
-- `cargo deny` -- license, advisory, and ban checks in CI
+- `#![deny(missing_docs)]` — every public item is documented
+- `cargo audit` (RustSec) and `cargo deny` (licenses, advisories, bans) in CI
 - SPDX license headers on all source files
-- 3 runtime dependencies -- minimal attack surface
+- 3 runtime dependencies — minimal attack surface
 
-</details>
+---
+
+## Documentation
+
+Full API reference: **[docs.rs/qrc](https://docs.rs/qrc)**.
 
 ---
 
