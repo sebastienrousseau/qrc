@@ -29,7 +29,7 @@
 - [Library Usage](#library-usage) — formats, styling, watermarks
 - [Structured Payloads](#structured-payloads) — vCard, Wi-Fi, MeCard, EMVCo
 - [Macros](#macros) — 11 convenience macros
-- [Examples](#examples) — 18 focused examples
+- [Examples](#examples) — 20 focused examples
 - [Development](#development) — build, test, lint
 - [Security](#security) — safety guarantees
 - [Documentation](#documentation)
@@ -324,6 +324,8 @@ cargo run --example vcard
 | `mecard` | Compact MeCard contact |
 | `emvco` | EMVCo merchant payment |
 | `business_card` | Branded vCard QR — centred logo + quiet zone, stays scannable |
+| `control_image` | Export a ControlNet control image (for SD QR art) |
+| `art_qr` | Offline image-blended "art QR" — no model needed |
 
 ---
 

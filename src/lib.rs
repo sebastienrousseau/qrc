@@ -112,6 +112,10 @@ pub mod macros;
 /// data into the text conventions QR scanners recognise.
 pub mod payload;
 
+/// Offline "art QR" primitives: ControlNet control images and image blending.
+mod art;
+pub use art::BlendOptions;
+
 #[cfg(feature = "wasm")]
 /// WASM bindings for the QRC library.
 pub mod wasm;
@@ -738,6 +742,51 @@ impl QRCode {
         }
 
         combined_image
+    }
+
+    /// Exports a square, high-contrast control image for a Stable Diffusion QR
+    /// ControlNet (e.g. *QR Code Monster*).
+    ///
+    /// The modules are integer-scaled and centred on a `size`×`size` canvas with
+    /// a 4-module quiet zone; if they cannot fit exactly, the canvas grows to the
+    /// next whole module rather than distorting them. Pair with
+    /// [`with_ec_level`](Self::with_ec_level) + `EcLevel::H` so the model has the
+    /// most redundancy to hide art behind.
+    ///
+    /// ```
+    /// use qrc::{QRCode, EcLevel};
+    ///
+    /// let img = QRCode::from_string("https://example.com".to_string())
+    ///     .with_ec_level(EcLevel::H)
+    ///     .to_control_image(768);
+    /// assert!(img.width() >= 768 && img.width() == img.height());
+    /// ```
+    #[must_use]
+    pub fn to_control_image(&self, size: u32) -> RgbaImage {
+        art::control_image(&self.to_qrcode(), size)
+    }
+
+    /// Weaves a `background` image through the code's data modules, returning a
+    /// branded, scannable "art QR" with no model required.
+    ///
+    /// Finder patterns, the quiet zone, and a centre dot in every module stay
+    /// solid; everything else blends the background toward the module colour by
+    /// [`BlendOptions::strength`]. Use [`with_ec_level`](Self::with_ec_level) +
+    /// `EcLevel::H` so the blended regions stay recoverable.
+    ///
+    /// ```
+    /// use qrc::{QRCode, EcLevel, BlendOptions};
+    /// use image::{ImageBuffer, Rgba};
+    ///
+    /// let bg = ImageBuffer::from_pixel(64, 64, Rgba([0, 120, 220, 255]));
+    /// let art = QRCode::from_string("https://example.com".to_string())
+    ///     .with_ec_level(EcLevel::H)
+    ///     .blend_image(&bg, &BlendOptions::default());
+    /// assert_eq!(art.width(), art.height());
+    /// ```
+    #[must_use]
+    pub fn blend_image(&self, background: &RgbaImage, opts: &BlendOptions) -> RgbaImage {
+        art::blend(&self.to_qrcode(), background, opts)
     }
 
     /// Sets the encoding format of the QR code.
