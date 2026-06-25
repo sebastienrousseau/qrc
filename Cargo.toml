@@ -169,6 +169,10 @@ name = "emvco"
 path = "examples/emvco.rs"
 
 [[example]]
+name = "business_card"
+path = "examples/business_card.rs"
+
+[[example]]
 name = "control_image"
 path = "examples/control_image.rs"
 
