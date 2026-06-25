@@ -1,24 +1,24 @@
 [package]
-authors = ["QRC Contributors"]
+authors = ["QRC"]
 categories = ["Algorithms", "Encoding", "Images", "Rendering", "Visualization"]
 description = """
 A Rust library for generating and manipulating QR code images in various formats
 """
 documentation = "https://docs.rs/qrc"
 edition = "2021"
+autoexamples = false
 exclude = ["/.git/*", "/.github/*", "/.gitignore", "/.vscode/*"]
 homepage = "https://qrclib.one"
 keywords = ["barcode", "mini-functions", "qr", "qrc", "qrcode"]
 license = "MIT OR Apache-2.0"
 name = "qrc"
 repository = "https://github.com/sebastienrousseau/qrc/"
-rust-version = "1.71.1"
-version = "0.0.5"
+rust-version = "1.75.0"
+version = "0.0.6"
 include = [
-    "../../LICENSE-APACHE",
-    "../../LICENSE-MIT",
+    "/LICENSE-APACHE",
+    "/LICENSE-MIT",
     "/benches/**",
-    "/build.rs",
     "/Cargo.toml",
     "/examples/**",
     "/README.md",
@@ -33,8 +33,10 @@ members = ["xtask"]
 all-features = true
 
 [dependencies]
-flate2 = "1.0.35"
-image = "0.25.5"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "ico"] }
+js-sys = { version = "0.3", optional = true }
+miniz_oxide = "0.8.9"
+wasm-bindgen = { version = "0.2", optional = true }
 
 [dependencies.qrcode]
 default-features = false
@@ -43,23 +45,74 @@ optional = false
 version = "0.14.1"
 
 [dev-dependencies]
-criterion = "0.5.1"
+criterion = "0.8.2"
 
 [features]
 default = []
+wasm = ["wasm-bindgen", "js-sys"]
 
 [lib]
 path = "src/lib.rs"
 name = "qrc"
-plugin = false
 proc-macro = false
 crate-type = ["lib"]
 required-features = []
 
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+
+[[example]]
+name = "formats"
+path = "examples/formats.rs"
+
+[[example]]
+name = "colorize"
+path = "examples/colorize.rs"
+
+[[example]]
+name = "resize"
+path = "examples/resize.rs"
+
+[[example]]
+name = "watermark"
+path = "examples/watermark.rs"
+
+[[example]]
+name = "overlay"
+path = "examples/overlay.rs"
+
+[[example]]
+name = "compress"
+path = "examples/compress.rs"
+
+[[example]]
+name = "batch"
+path = "examples/batch.rs"
+
+[[example]]
+name = "combine"
+path = "examples/combine.rs"
+
+[[example]]
+name = "encoding"
+path = "examples/encoding.rs"
+
+[[example]]
+name = "dynamic"
+path = "examples/dynamic.rs"
+
+[[example]]
+name = "multilingual"
+path = "examples/multilingual.rs"
+
+[[example]]
+name = "macros"
+path = "examples/macros.rs"
+
 [[bench]]
 path = "benches/qrc.rs"
 name = "qrc"
-plugin = false
 proc-macro = false
 harness = false
 required-features = []
@@ -98,3 +151,31 @@ opt-level = 0
 overflow-checks = true
 rpath = false
 strip = false
+
+[[example]]
+name = "vcard"
+path = "examples/vcard.rs"
+
+[[example]]
+name = "wifi"
+path = "examples/wifi.rs"
+
+[[example]]
+name = "mecard"
+path = "examples/mecard.rs"
+
+[[example]]
+name = "emvco"
+path = "examples/emvco.rs"
+
+[[example]]
+name = "business_card"
+path = "examples/business_card.rs"
+
+[[example]]
+name = "control_image"
+path = "examples/control_image.rs"
+
+[[example]]
+name = "art_qr"
+path = "examples/art_qr.rs"
