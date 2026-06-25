@@ -1,23 +1,27 @@
-# Build and deploy API documentation to GitHub Pages
-
+# Build and deploy the API documentation to GitHub Pages via GitHub Actions
+# (native deployment — no gh-pages branch).
 name: Document
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
+# Permissions required by actions/deploy-pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One concurrent Pages deployment; don't cancel an in-flight one.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Build & deploy docs
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  build:
+    name: Build docs
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
       - uses: actions/checkout@v7
 
@@ -28,31 +32,30 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Generate documentation
-        run: |
-          RUSTDOCFLAGS="--cfg docsrs" \
-            cargo doc --no-deps --all-features --workspace
+        run: RUSTDOCFLAGS="--cfg docsrs" cargo doc --no-deps --all-features --workspace
 
-      - name: Create index redirect
-        run: echo '<html><head><meta http-equiv="refresh" content="0; url=/qrc/"></head><body></body></html>' > ./target/doc/index.html
+      - name: Landing-page redirect to the crate root
+        run: echo '<!DOCTYPE html><meta http-equiv="refresh" content="0; url=qrc/">' > target/doc/index.html
 
-      - name: Write CNAME file
-        run: echo 'doc.qrclib.one' > ./target/doc/CNAME
+      - name: Preserve custom domain
+        run: echo 'doc.qrclib.one' > target/doc/CNAME
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: documentation
           path: target/doc
-          if-no-files-found: error
-          retention-days: 1
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          cname: true
-          commit_message: Deploy documentation at ${{ github.sha }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./target/doc
-          user_email: actions@users.noreply.github.com
-          user_name: github-actions
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
