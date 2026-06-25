@@ -368,6 +368,12 @@ Full API reference: **[docs.rs/qrc](https://docs.rs/qrc)**.
 
 ---
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release notes, including the breaking changes in 0.0.6.
+
+---
+
 ## License
 
 Dual-licensed under [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) or [MIT](https://opensource.org/licenses/MIT), at your option.
