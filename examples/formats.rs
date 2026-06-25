@@ -37,7 +37,7 @@ fn main() {
 
         // ── JPG output ──────────────────────────────────────────────────
         support::task_with_output("Export as JPG (compressed, print-ready)", || {
-            let jpg_bytes = qr.to_jpg(size);
+            let jpg_bytes = qr.to_jpg(size).unwrap();
             let path = dir.join("qrcode.jpg");
             fs::write(&path, &jpg_bytes).unwrap();
             vec![
@@ -49,7 +49,7 @@ fn main() {
 
         // ── GIF output ─────────────────────────────────────────────────
         support::task_with_output("Export as GIF (small palette, universal)", || {
-            let gif_bytes = qr.to_gif(size);
+            let gif_bytes = qr.to_gif(size).unwrap();
             let path = dir.join("qrcode.gif");
             fs::write(&path, &gif_bytes).unwrap();
             vec![

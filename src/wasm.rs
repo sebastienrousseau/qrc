@@ -62,12 +62,12 @@ impl WasmQRCode {
     /// Returns PNG-encoded bytes.
     #[wasm_bindgen(js_name = "toPngBytes")]
     pub fn to_png_bytes(&self, width: u32) -> Vec<u8> {
-        self.inner.to_png_bytes(width)
+        self.inner.to_png_bytes(width).unwrap_or_default()
     }
 
     /// Returns JPEG-encoded bytes (quality 85).
     #[wasm_bindgen(js_name = "toJpg")]
     pub fn to_jpg(&self, width: u32) -> Vec<u8> {
-        self.inner.to_jpg(width)
+        self.inner.to_jpg(width).unwrap_or_default()
     }
 }

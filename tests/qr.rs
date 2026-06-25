@@ -65,7 +65,7 @@ mod tests {
     #[test]
     fn test_to_gif() {
         let qrcode = QRCode::from_string(URL.to_string());
-        let qrcode_gif = qrcode.to_gif(512);
+        let qrcode_gif = qrcode.to_gif(512).unwrap();
         // GIF magic bytes: GIF89a or GIF87a
         assert!(qrcode_gif.len() > 6);
         assert_eq!(&qrcode_gif[..3], b"GIF");
@@ -74,7 +74,7 @@ mod tests {
     #[test]
     fn test_to_jpg() {
         let qrcode = QRCode::from_string(URL.to_string());
-        let qrcode_jpg = qrcode.to_jpg(512);
+        let qrcode_jpg = qrcode.to_jpg(512).unwrap();
         // JPEG magic bytes: FF D8 FF
         assert!(qrcode_jpg.len() > 3);
         assert_eq!(&qrcode_jpg[..2], &[0xFF, 0xD8]);
@@ -131,8 +131,8 @@ mod tests {
     #[test]
     fn test_qr_code_from_png() {
         let data = vec![0x61, 0x62, 0x63];
-        let result = qr_code_to!(data.clone(), "png", 512);
-        // qr_code_to! now returns Vec<u8> (PNG-encoded bytes)
+        let result = qr_code_to!(data.clone(), "png", 512).unwrap();
+        // qr_code_to! now returns Result<Vec<u8>, _> (PNG-encoded bytes)
         assert!(!result.is_empty());
         // Verify PNG magic bytes
         assert_eq!(&result[..4], &[0x89, 0x50, 0x4E, 0x47]);
@@ -244,21 +244,21 @@ mod tests {
     #[test]
     fn test_jpg_magic_bytes() {
         let qr = QRCode::from_string("test".to_string());
-        let jpg = qr.to_jpg(64);
+        let jpg = qr.to_jpg(64).unwrap();
         assert_eq!(&jpg[..2], &[0xFF, 0xD8]);
     }
 
     #[test]
     fn test_gif_magic_bytes() {
         let qr = QRCode::from_string("test".to_string());
-        let gif = qr.to_gif(64);
+        let gif = qr.to_gif(64).unwrap();
         assert_eq!(&gif[..3], b"GIF");
     }
 
     #[test]
     fn test_png_bytes_magic() {
         let qr = QRCode::from_string("test".to_string());
-        let png = qr.to_png_bytes(64);
+        let png = qr.to_png_bytes(64).unwrap();
         assert_eq!(&png[..4], &[0x89, 0x50, 0x4E, 0x47]);
     }
 
