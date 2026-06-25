@@ -108,6 +108,10 @@ pub use qrcode::types::QrError;
 /// The `macros` module contains functions for generating macros.
 pub mod macros;
 
+/// Structured payload builders (vCard, Wi-Fi, MeCard, EMVCo) that turn typed
+/// data into the text conventions QR scanners recognise.
+pub mod payload;
+
 #[cfg(feature = "wasm")]
 /// WASM bindings for the QRC library.
 pub mod wasm;

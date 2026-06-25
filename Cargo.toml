@@ -151,3 +151,19 @@ opt-level = 0
 overflow-checks = true
 rpath = false
 strip = false
+
+[[example]]
+name = "vcard"
+path = "examples/vcard.rs"
+
+[[example]]
+name = "wifi"
+path = "examples/wifi.rs"
+
+[[example]]
+name = "mecard"
+path = "examples/mecard.rs"
+
+[[example]]
+name = "emvco"
+path = "examples/emvco.rs"
