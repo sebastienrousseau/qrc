@@ -708,37 +708,60 @@ impl QRCode {
         data.into_iter().map(Self::from_string).collect()
     }
 
-    /// Overlays an image on top of the QR code.
+    /// Overlays an image at the **centre** of the QR code (e.g. a logo).
+    ///
+    /// The code is rendered at a usable scale with the mandatory 4-module quiet
+    /// zone, and the overlay is centred (not pasted at the top-left corner, which
+    /// previously covered a finder pattern). Fully-transparent overlay pixels are
+    /// skipped. Keep the overlay small (≈ the central fifth) and pair it with a
+    /// high error-correction level so the result stays scannable.
     ///
     /// # Parameters
     ///
-    /// * `overlay`: A reference to the `RgbaImage` to overlay on the QR code.
+    /// * `overlay`: A reference to the `RgbaImage` to centre on the QR code.
     ///
     /// # Returns
     ///
-    /// A combined `RgbaImage` with the overlay applied.
+    /// A combined `RgbaImage` with the overlay centred on the code.
     #[must_use]
     #[allow(clippy::cast_possible_truncation)]
     pub fn overlay_image(&self, overlay: &RgbaImage) -> RgbaImage {
+        const MODULE_PX: u32 = 10;
+        const QUIET: u32 = 4;
+
         let qrcode = self.to_qrcode();
-        let qr_dim = qrcode.width() as u32;
+        let n = qrcode.width() as u32;
+        let dim = (n + 2 * QUIET) * MODULE_PX;
         let mut combined_image: RgbaImage =
-            ImageBuffer::from_pixel(qr_dim, qr_dim, Rgba([255, 255, 255, 255]));
+            ImageBuffer::from_pixel(dim, dim, Rgba([255, 255, 255, 255]));
 
-        for x in 0..qrcode.width() {
-            for y in 0..qrcode.width() {
-                let pixel = qrcode[(x, y)];
-                let cx = x as u32;
-                let cy = y as u32;
-
-                if pixel == Color::Dark {
-                    combined_image.put_pixel(cx, cy, Rgba([0, 0, 0, 255]));
+        for y in 0..qrcode.width() {
+            for x in 0..qrcode.width() {
+                if qrcode[(x, y)] == Color::Dark {
+                    let px0 = (x as u32 + QUIET) * MODULE_PX;
+                    let py0 = (y as u32 + QUIET) * MODULE_PX;
+                    for dy in 0..MODULE_PX {
+                        for dx in 0..MODULE_PX {
+                            combined_image.put_pixel(px0 + dx, py0 + dy, Rgba([0, 0, 0, 255]));
+                        }
+                    }
                 }
             }
         }
 
+        // Centre the overlay, skipping fully-transparent pixels and clamping to
+        // the canvas so an oversized logo can't panic.
+        let (ow, oh) = overlay.dimensions();
+        let ox = dim.saturating_sub(ow) / 2;
+        let oy = dim.saturating_sub(oh) / 2;
         for (x, y, pixel) in overlay.enumerate_pixels() {
-            combined_image.put_pixel(x, y, *pixel);
+            if pixel[3] == 0 {
+                continue;
+            }
+            let (px, py) = (ox + x, oy + y);
+            if px < dim && py < dim {
+                combined_image.put_pixel(px, py, *pixel);
+            }
         }
 
         combined_image
