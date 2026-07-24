@@ -14,7 +14,7 @@
   <a href="https://github.com/sebastienrousseau/qrc/actions"><img src="https://img.shields.io/github/actions/workflow/status/sebastienrousseau/qrc/ci.yml?style=for-the-badge&logo=github" alt="Build" /></a>
   <a href="https://crates.io/crates/qrc"><img src="https://img.shields.io/crates/v/qrc.svg?style=for-the-badge&color=fc8d62&logo=rust" alt="Crates.io" /></a>
   <a href="https://docs.rs/qrc"><img src="https://img.shields.io/badge/docs.rs-qrc-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" alt="Docs.rs" /></a>
-  <a href="https://lib.rs/crates/qrc"><img src="https://img.shields.io/badge/lib.rs-v0.0.6-orange.svg?style=for-the-badge" alt="lib.rs" /></a>
+  <a href="https://lib.rs/crates/qrc"><img src="https://img.shields.io/badge/lib.rs-v0.0.7-orange.svg?style=for-the-badge" alt="lib.rs" /></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/crates/l/qrc.svg?style=for-the-badge" alt="License" /></a>
 </p>
 
@@ -41,7 +41,7 @@
 
 ```toml
 [dependencies]
-qrc = "0.0.6"
+qrc = "0.0.7"
 ```
 
 …or from the command line:
