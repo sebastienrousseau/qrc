@@ -40,8 +40,8 @@ fn main() {
             img.save(dir.join("watermarked_method.png")).unwrap();
             vec![
                 format!("QR size:    {}x{} px", w, h),
-                format!("Logo size:  20x20 px"),
-                format!("Position:   Bottom-right corner (alpha blended)"),
+                "Logo size:  20x20 px".to_string(),
+                "Position:   Bottom-right corner (alpha blended)".to_string(),
             ]
         });
 
@@ -51,8 +51,8 @@ fn main() {
             add_image_watermark!(&mut img, &logo);
             img.save(dir.join("watermarked_macro.png")).unwrap();
             vec![
-                format!("Macro:   add_image_watermark!(&mut img, &logo)"),
-                format!("Result:  Identical to method call"),
+                "Macro:   add_image_watermark!(&mut img, &logo)".to_string(),
+                "Result:  Identical to method call".to_string(),
             ]
         });
 
@@ -63,9 +63,9 @@ fn main() {
             QRCode::add_image_watermark(&mut img, &big_logo);
             img.save(dir.join("watermarked_large.png")).unwrap();
             vec![
-                format!("QR size:    512x512 px"),
-                format!("Logo size:  40x40 px"),
-                format!("Tip:        Keep logo < 10%% of QR area for scannability"),
+                "QR size:    512x512 px".to_string(),
+                "Logo size:  40x40 px".to_string(),
+                "Tip:        Keep logo < 10%% of QR area for scannability".to_string(),
             ]
         });
     });

@@ -25,7 +25,7 @@ fn main() {
         vec![
             format!("Dimensions: {}x{} px", w, h),
             format!("Pixels:     {}", w as usize * h as usize),
-            format!("Use case:   Favicon, notification badge"),
+            "Use case:   Favicon, notification badge".to_string(),
         ]
     });
 
@@ -35,7 +35,7 @@ fn main() {
         let (w, h) = img.dimensions();
         vec![
             format!("Dimensions: {}x{} px", w, h),
-            format!("Use case:   Instagram story, Twitter post"),
+            "Use case:   Instagram story, Twitter post".to_string(),
         ]
     });
 
@@ -50,7 +50,7 @@ fn main() {
                 f64::from(w) / 300.0,
                 f64::from(h) / 300.0
             ),
-            format!("Use case:   Flyers, posters, packaging"),
+            "Use case:   Flyers, posters, packaging".to_string(),
         ]
     });
 
@@ -61,7 +61,7 @@ fn main() {
         vec![
             format!("Dimensions: {}x{} px", w, h),
             format!("Ratio:      {}:{}", w / 400, h / 400),
-            format!("Use case:   Email banner, horizontal placement"),
+            "Use case:   Email banner, horizontal placement".to_string(),
         ]
     });
 
@@ -71,7 +71,7 @@ fn main() {
         let (w, h) = img.dimensions();
         vec![
             format!("Dimensions: {}x{} px", w, h),
-            format!("Macro:      resize!(qr, 256)"),
+            "Macro:      resize!(qr, 256)".to_string(),
         ]
     });
 

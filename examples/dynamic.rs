@@ -23,8 +23,8 @@ fn main() {
         let encoded_url = String::from_utf8_lossy(&qr.data);
         vec![
             format!("Encoded URL: {encoded_url}"),
-            format!("Use case:    Print once, update destination anytime"),
-            format!("Tip:         Host a redirect service at the encoded URL"),
+            "Use case:    Print once, update destination anytime".to_string(),
+            "Tip:         Host a redirect service at the encoded URL".to_string(),
         ]
     });
 
@@ -34,7 +34,7 @@ fn main() {
         let encoded_url = String::from_utf8_lossy(&qr.data);
         vec![
             format!("Encoded URL: {encoded_url}"),
-            format!("Macro:       create_dynamic_qr!(\"product-launch-q4\")"),
+            "Macro:       create_dynamic_qr!(\"product-launch-q4\")".to_string(),
         ]
     });
 
@@ -44,8 +44,8 @@ fn main() {
         let internal = qr.to_qrcode();
         vec![
             format!("QR modules: {}x{}", internal.width(), internal.width()),
-            format!("Scenario:   Ticket printed weeks before event"),
-            format!("Benefit:    Venue change? Update the redirect, not the ticket"),
+            "Scenario:   Ticket printed weeks before event".to_string(),
+            "Benefit:    Venue change? Update the redirect, not the ticket".to_string(),
         ]
     });
 

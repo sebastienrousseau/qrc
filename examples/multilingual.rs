@@ -32,8 +32,8 @@ fn main() {
         let qr = QRCode::create_multilanguage(&translations, "en");
         vec![
             format!("Selected:   \"{}\"", String::from_utf8_lossy(&qr.data)),
-            format!("Language:   en (explicit)"),
-            format!("Use case:   International product packaging"),
+            "Language:   en (explicit)".to_string(),
+            "Use case:   International product packaging".to_string(),
         ]
     });
 
@@ -49,7 +49,7 @@ fn main() {
             };
             vec![
                 format!("Encoded: {}", String::from_utf8_lossy(&qr.data)),
-                format!("Macro:   create_multilanguage_qr! {{ \"en\" => ..., ... }}"),
+                "Macro:   create_multilanguage_qr! { \"en\" => ..., ... }".to_string(),
             ]
         },
     );
@@ -64,7 +64,7 @@ fn main() {
         };
         vec![
             format!("Encoded: {}", String::from_utf8_lossy(&qr.data)),
-            format!("Language: fr (explicit preference)"),
+            "Language: fr (explicit preference)".to_string(),
         ]
     });
 
@@ -80,7 +80,7 @@ fn main() {
         vec![
             format!("Content:  {}", String::from_utf8_lossy(&qr.data)),
             format!("Modules:  {}x{}", internal.width(), internal.width()),
-            format!("Scenario: Visitor scans, gets audio in their language"),
+            "Scenario: Visitor scans, gets audio in their language".to_string(),
         ]
     });
 

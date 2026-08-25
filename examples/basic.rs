@@ -40,7 +40,7 @@ fn main() {
         let qr = QRCode::from_bytes(wifi.as_bytes().to_vec());
         vec![
             format!("Data length: {} bytes", qr.data.len()),
-            format!("Use case:    Wi-Fi auto-connect QR code"),
+            "Use case:    Wi-Fi auto-connect QR code".to_string(),
         ]
     });
 

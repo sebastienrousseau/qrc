@@ -25,7 +25,7 @@ fn main() {
         match QRCode::combine_qr_codes(&[contact, website, wifi]) {
             Ok(combined) => vec![
                 format!("Combined data: {} bytes", combined.data.len()),
-                format!("Use case:      Multi-info display card"),
+                "Use case:      Multi-info display card".to_string(),
             ],
             Err(e) => vec![format!("Error: {e}")],
         }
@@ -40,7 +40,7 @@ fn main() {
         match combine_qr_codes!([qr1, qr2, qr3]) {
             Ok(combined) => vec![
                 format!("Combined data: {} bytes", combined.data.len()),
-                format!("Macro:         combine_qr_codes!([...])"),
+                "Macro:         combine_qr_codes!([...])".to_string(),
             ],
             Err(e) => vec![format!("Error: {e}")],
         }

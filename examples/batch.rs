@@ -53,7 +53,7 @@ fn main() {
         let codes = batch_generate_qr!(urls);
         vec![
             format!("Generated:  {} QR codes", codes.len()),
-            format!("Use case:   Event ticket batch"),
+            "Use case:   Event ticket batch".to_string(),
         ]
     });
 
