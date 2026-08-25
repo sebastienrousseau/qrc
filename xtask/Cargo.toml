@@ -2,6 +2,10 @@
 name = "xtask"
 version = "0.1.0"
 edition = "2021"
+# Local build-task runner, not a library. The name `xtask` on crates.io
+# belongs to someone else, so an accidental workspace-wide publish must
+# never reach out for it. Matches kyberlib and rlg, which already do this.
+publish = false
 
 [[bin]]
 name = "xtask"
