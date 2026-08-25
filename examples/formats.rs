@@ -43,7 +43,7 @@ fn main() {
             vec![
                 format!("Dimensions: {}x{} px", size, size),
                 format!("File size:  {} bytes", jpg_bytes.len()),
-                format!("Use case:   Print materials, email attachments"),
+                "Use case:   Print materials, email attachments".to_string(),
             ]
         });
 
@@ -55,7 +55,7 @@ fn main() {
             vec![
                 format!("Dimensions: {}x{} px", size, size),
                 format!("File size:  {} bytes", gif_bytes.len()),
-                format!("Use case:   Legacy systems, email signatures"),
+                "Use case:   Legacy systems, email signatures".to_string(),
             ]
         });
 
@@ -68,7 +68,7 @@ fn main() {
             vec![
                 format!("SVG length: {} chars", svg.len()),
                 format!("File size:  {} bytes", file_size),
-                format!("Use case:   Logos, responsive web, high-DPI print"),
+                "Use case:   Logos, responsive web, high-DPI print".to_string(),
             ]
         });
     });

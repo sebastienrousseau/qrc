@@ -28,9 +28,9 @@ fn main() {
             let (w, h) = img.dimensions();
             img.save(dir.join("blue.png")).unwrap();
             vec![
-                format!("Colour: rgba(0, 102, 204, 255)"),
+                "Colour: rgba(0, 102, 204, 255)".to_string(),
                 format!("Size:   {}x{} px", w, h),
-                format!("Use:    Corporate website, business cards"),
+                "Use:    Corporate website, business cards".to_string(),
             ]
         });
 
@@ -40,8 +40,8 @@ fn main() {
             let img = qr.colorize(red);
             img.save(dir.join("red.png")).unwrap();
             vec![
-                format!("Colour: rgba(220, 20, 60, 255)"),
-                format!("Use:    Sale promotions, urgent call-to-action"),
+                "Colour: rgba(220, 20, 60, 255)".to_string(),
+                "Use:    Sale promotions, urgent call-to-action".to_string(),
             ]
         });
 
@@ -51,8 +51,8 @@ fn main() {
             let img = qr.colorize(green);
             img.save(dir.join("green.png")).unwrap();
             vec![
-                format!("Colour: rgba(34, 139, 34, 255)"),
-                format!("Use:    Eco-friendly campaigns, sustainability"),
+                "Colour: rgba(34, 139, 34, 255)".to_string(),
+                "Use:    Eco-friendly campaigns, sustainability".to_string(),
             ]
         });
 
@@ -62,9 +62,9 @@ fn main() {
             let img = qr.colorize(grey);
             img.save(dir.join("grey.png")).unwrap();
             vec![
-                format!("Colour: rgba(51, 51, 51, 255)"),
-                format!("Use:    Professional print, subtle branding"),
-                format!("Tip:    Dark colours on white ensure scan reliability"),
+                "Colour: rgba(51, 51, 51, 255)".to_string(),
+                "Use:    Professional print, subtle branding".to_string(),
+                "Tip:    Dark colours on white ensure scan reliability".to_string(),
             ]
         });
     });

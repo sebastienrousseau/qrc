@@ -31,7 +31,7 @@ fn main() {
         match qr.set_encoding_format("utf-8") {
             Ok(updated) => vec![
                 format!("Format: {}", updated.get_encoding_format()),
-                format!("Status: accepted"),
+                "Status: accepted".to_string(),
             ],
             Err(e) => vec![format!("Error: {e}")],
         }
@@ -42,7 +42,7 @@ fn main() {
         let qr = QRCode::new(b"data".to_vec());
         match set_encoding_format!(qr, "utf-8") {
             Ok(updated) => vec![
-                format!("Macro:  set_encoding_format!(qr, \"utf-8\")"),
+                "Macro:  set_encoding_format!(qr, \"utf-8\")".to_string(),
                 format!("Format: {}", updated.get_encoding_format()),
             ],
             Err(e) => vec![format!("Error: {e}")],

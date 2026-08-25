@@ -35,7 +35,7 @@ END:VCARD";
             format!("Original:   {} bytes", vcard.len()),
             format!("Compressed: {} bytes", compressed.len()),
             format!("Ratio:      {ratio:.1}%"),
-            format!("Use case:   Fit more contact info in a QR code"),
+            "Use case:   Fit more contact info in a QR code".to_string(),
         ]
     });
 
@@ -49,7 +49,7 @@ END:VCARD";
             format!("Original:   {} bytes", json.len()),
             format!("Compressed: {} bytes", compressed.len()),
             format!("Ratio:      {ratio:.1}%"),
-            format!("Use case:   Device provisioning via QR scan"),
+            "Use case:   Device provisioning via QR scan".to_string(),
         ]
     });
 
@@ -63,7 +63,7 @@ END:VCARD";
             format!("Original:     {} bytes", large_text.len()),
             format!("Compressed:   {} bytes", compressed.len()),
             format!("QR modules:   {}x{}", internal.width(), internal.width()),
-            format!("Tip:          Decompress on the receiving end"),
+            "Tip:          Decompress on the receiving end".to_string(),
         ]
     });
 

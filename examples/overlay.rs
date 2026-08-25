@@ -44,8 +44,8 @@ fn main() {
             img.save(dir.join("overlay_method.png")).unwrap();
             vec![
                 format!("Output size: {}x{} px (matches QR module grid)", w, h),
-                format!("Logo placed at top-left (0, 0)"),
-                format!("Use case:    Brand identity on QR codes"),
+                "Logo placed at top-left (0, 0)".to_string(),
+                "Use case:    Brand identity on QR codes".to_string(),
             ]
         });
 
@@ -55,7 +55,7 @@ fn main() {
             let (w, h) = img.dimensions();
             img.save(dir.join("overlay_macro.png")).unwrap();
             vec![
-                format!("Macro:  overlay_image!(qr, &logo)"),
+                "Macro:  overlay_image!(qr, &logo)".to_string(),
                 format!("Size:   {}x{} px", w, h),
             ]
         });
