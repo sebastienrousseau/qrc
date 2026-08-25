@@ -173,6 +173,10 @@ jobs:
     name: Publish to crates.io
     needs: [release]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Mints the OIDC token crates.io exchanges for a publish token.
+      id-token: write
 
     steps:
       - name: Checkout
@@ -184,8 +188,16 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
+      # Trusted publishing: swaps this job's GitHub OIDC identity for a
+      # temporary crates.io token, revoked by the action's post step when
+      # the job ends. Needs a trusted publisher on crates.io for the qrc
+      # crate (repo + release.yml).
+      - name: Authenticate with crates.io
+        id: auth
+        uses: rust-lang/crates-io-auth-action@v1
+
       - name: Publish
         run: cargo publish
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_API_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         shell: bash
