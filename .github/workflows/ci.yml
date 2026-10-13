@@ -48,15 +48,23 @@ jobs:
 
   # Verify minimum supported Rust version compiles
   msrv:
-    name: MSRV (1.75.0)
+    name: MSRV (1.89.0)
     runs-on: ubuntu-latest
+    env:
+      # rust-toolchain.toml pins `stable`, and rustup prefers that file
+      # over the toolchain installed below, so without this the job
+      # built on stable and proved nothing about the floor.
+      RUSTUP_TOOLCHAIN: "1.89.0"
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install Rust 1.75.0
+      - name: Install Rust 1.89.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: "1.75.0"
+          toolchain: "1.89.0"
+
+      - name: The MSRV toolchain is the one in use
+        run: rustc --version | grep -F 'rustc 1.89.0 '
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
