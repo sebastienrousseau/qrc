@@ -68,7 +68,7 @@ cd qrc
 cargo build --release
 ```
 
-Requires **Rust 1.75.0+** (MSRV). Tested on Linux, macOS, and Windows.
+Requires **Rust 1.89.0+** (MSRV). Tested on Linux, macOS, and Windows.
 
 ---
 
@@ -124,7 +124,7 @@ zero `unsafe`.
 | **Batch / Combine** | `Vec<String>` → `Vec<QRCode>`; merge codes side-by-side |
 | **Macros** | 11 convenience macros |
 | **Safety** | `#![forbid(unsafe_code)]`, `#![deny(missing_docs)]` |
-| **MSRV** | Rust 1.75.0 |
+| **MSRV** | Rust 1.89.0 |
 | **Runtime deps** | 3 (`image`, `qrcode`, `miniz_oxide`) |
 
 ---

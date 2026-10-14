@@ -13,7 +13,7 @@ keywords = ["barcode", "mini-functions", "qr", "qrc", "qrcode"]
 license = "MIT OR Apache-2.0"
 name = "qrc"
 repository = "https://github.com/sebastienrousseau/qrc/"
-rust-version = "1.75.0"
+rust-version = "1.89.0"
 version = "0.0.7"
 include = [
     "/LICENSE-APACHE",
