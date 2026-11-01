@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 While the crate is pre-1.0, minor breaking changes may land in patch releases.
 
+## [0.0.7] - Unreleased
+
+### Changed
+
+- **Breaking: the MSRV is now Rust 1.89.0** (was 1.75.0), one floor
+  shared with the maintainer's other Rust crates.
+- **The MSRV CI job builds on the MSRV.** `rust-toolchain.toml` pins
+  `stable`, and rustup prefers that file over the toolchain the job
+  installs, so the job had been building on stable. It now sets
+  `RUSTUP_TOOLCHAIN` and asserts `rustc --version` first.
+
 ## [0.0.6] - 2026-06-25
 
 ### Added

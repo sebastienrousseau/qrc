@@ -22,11 +22,18 @@ jobs:
   build:
     name: Build docs
     runs-on: ubuntu-latest
+    env:
+      # rust-toolchain.toml pins `stable`, and rustup prefers that file
+      # over the toolchain installed below, so without this the job
+      # ran on stable.
+      RUSTUP_TOOLCHAIN: nightly
     steps:
       - uses: actions/checkout@v7
 
       - name: Install Rust nightly
         uses: dtolnay/rust-toolchain@nightly
+      - name: The nightly toolchain is the one in use
+        run: rustc --version | grep -F -- '-nightly'
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
